@@ -10,11 +10,14 @@
 Image::Image(int w, int h, int nb_chan) :
     width(w),
     height(h),
-    nb_channels(nb_chan)
+    nb_channels(nb_chan),
+    patch_size(16)
 {
+    data = new unsigned char[w * h * nb_chan];
 }
 
-Image::Image(const char* path)
+Image::Image(const char* path) :
+    patch_size(16)
 {
     data = stbi_load(path, &width, &height, &nb_channels, 0);
     if (!data) {
@@ -35,7 +38,7 @@ void Image::save_ppm(const char* path) const {
 
     for (int j = 0; j < height; ++j)
         for (int i = 0; i < width; ++i)
-            ofs << (char) data[j * width + i] << (char) data[j * width + i]  << (char) data[j * width + i] ;       // red, green, blue
+            ofs << (char) data[j * width + i] << (char) data[j * width + i]  << (char) data[j * width + i];
 
     ofs.close();
 }
@@ -43,69 +46,67 @@ void Image::save_ppm(const char* path) const {
 Image Image::to_gray() const {
     Image img(width, height, 1);
 
-    auto new_data = new unsigned char[width * height];
-
     for (int i = 0; i < width * height; ++i) {
-        new_data[i] = data[i * 3] * 0.2989 + data[i * 3 + 1] * 0.5870 + data[i * 3 + 2] * 0.1140;
+        img.data[i] = data[i * 3] * 0.2989 + data[i * 3 + 1] * 0.5870 + data[i * 3 + 2] * 0.1140;
     }
 
-    img.set_data(new_data);
     return img;
 }
 
-Image Image::add_padding_row() {
-    int new_height = height + 16 - height % 16;
+Image Image::add_padding_row() const {
+    int new_height = height + patch_size - height % patch_size;
 
     Image new_img(width, new_height, 1);
-    auto new_data = new unsigned char[width * new_height];
-
     for (int i = 0; i < new_height; ++i) {
         for (int j = 0; j < width; ++j) {
             if (i >= height) {
-                new_data[i * width + j] = data[(height-1) * width + j];
+                new_img.data[i * width + j] = data[(height-1) * width + j];
             } else {
-                new_data[i * width + j] = data[i * width + j];
+                new_img.data[i * width + j] = data[i * width + j];
             }
         }
     }
 
-    new_img.set_data(new_data);
     return new_img;
 }
 
-Image Image::add_padding_col() {
-    int new_width = width + 16 - width % 16;
+Image Image::add_padding_col() const {
+    int new_width = width + patch_size - width % patch_size;
 
     Image new_img(new_width, height, 1);
-    auto new_data = new unsigned char[new_width * height];
-
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < new_width; ++j) {
             if (j >= width) {
-                new_data[i * new_width + j] = data[i * width + (width-1)];
+                new_img.data[i * new_width + j] = data[i * width + (width-1)];
             } else {
-                new_data[i * new_width + j] = data[i * width + j];
+                new_img.data[i * new_width + j] = data[i * width + j];
             }
         }
     }
 
-    new_img.set_data(new_data);
     return new_img;
 }
 
 Block Image::to_blocks() const {
-    Block blocks(height / 16, width / 16);
-    for (int i = 0; i < height; i += 16) {
-        for (int j = 0; j < width; j += 16) {
-            auto block_data = new unsigned char[16 * 16];
-            for (int k = 0; k < 16; ++k) {
-                for (int l = 0; l < 16; ++ l) {
-                    block_data[k * 16 + l] = data[(i + k) * width + j + l];
-                }
-            }
-            blocks.add_block(block_data);
+    Block blocks(height / patch_size, width / patch_size, patch_size);
+
+    for (int i = 0; i < height; i += patch_size) {
+        for (int j = 0; j < width; j += patch_size) {
+            blocks.add_block(get_block(i, j));
         }
     }
 
     return blocks;
+}
+
+unsigned char* Image::get_block(int i, int j) const {
+    // Get block of size: patch_size * patch_size
+    auto block_data = new unsigned char[patch_size * patch_size];
+    for (int k = 0; k < patch_size; ++k) {
+        for (int l = 0; l < patch_size; ++ l) {
+            block_data[k * patch_size + l] = data[(i + k) * width + j + l];
+        }
+    }
+
+    return block_data;
 }
