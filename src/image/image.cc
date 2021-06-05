@@ -87,8 +87,8 @@ Image Image::add_padding_col() const {
     return new_img;
 }
 
-Block Image::to_blocks() const {
-    Block blocks(height / patch_size, width / patch_size, patch_size);
+Blocks Image::to_blocks() const {
+    Blocks blocks(height / patch_size, width / patch_size, patch_size);
 
     for (int i = 0; i < height; i += patch_size) {
         for (int j = 0; j < width; j += patch_size) {
@@ -99,14 +99,15 @@ Block Image::to_blocks() const {
     return blocks;
 }
 
-unsigned char* Image::get_block(int i, int j) const {
+Block Image::get_block(int i, int j) const {
     // Get block of size: patch_size * patch_size
-    auto block_data = new unsigned char[patch_size * patch_size];
+    auto block = Block(patch_size);
     for (int k = 0; k < patch_size; ++k) {
         for (int l = 0; l < patch_size; ++ l) {
-            block_data[k * patch_size + l] = data[(i + k) * width + j + l];
+            unsigned char v = data[(i + k) * width + j + l];
+            block.set_at(k, l, v);
         }
     }
 
-    return block_data;
+    return block;
 }

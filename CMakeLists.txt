@@ -3,6 +3,7 @@ set(OPT_FLAGS, "-Ofast")
 set(
     SRC_CPU
     src/image/image.cc
+    src/block/blocks.cc
     src/block/block.cc
 )
 

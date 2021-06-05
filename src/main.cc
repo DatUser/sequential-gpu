@@ -16,12 +16,10 @@ int main() {
     padded_img2.save_ppm("data/padded_test.ppm");
 
     // Compute blocks
-    Block blocks = padded_img2.to_blocks();
+    Blocks blocks = padded_img2.to_blocks();
 
-    auto blocks_data = blocks.get_blocks();
-    auto data = blocks_data[0];
-    for (int i = 0; i < 16; ++i) {
-        std::cout << int(data[i]) << '\n';
-    }
+    //std::vector<Block> blocks_data = blocks.get_blocks();
+    //Block data = blocks_data[0];
+    //std::cout << data << '\n';
     return 0;
 }

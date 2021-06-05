@@ -1,6 +1,6 @@
 #pragma once
 
-#include "block.hh"
+#include "blocks.hh"
 
 class Image {
     public:
@@ -13,7 +13,7 @@ class Image {
         Image add_padding_row() const;
         Image add_padding_col() const;
 
-        Block to_blocks() const;
+        Blocks to_blocks() const;
 
         void save_ppm(const char* path) const;
 
@@ -23,12 +23,15 @@ class Image {
         /* Attributes */
         unsigned char* data;
     private:
-        unsigned char* get_block(int i, int j) const;
+        Block get_block(int i, int j) const;
 
         /* Attributes */
+        // width / height of the image
+        // number of channels of the image (r/g/b)
         int width;
         int height;
         int nb_channels;
 
+        // how to divide the image
         int patch_size;
 };

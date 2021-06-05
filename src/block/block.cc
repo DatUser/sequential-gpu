@@ -1,43 +1,38 @@
 #include "block.hh"
 
-Block::Block(int nb_r, int nb_c, int size) :
-    nb_rows(nb_r),
-    nb_cols(nb_c),
-    block_size(size),
-    nb_neighbors(8)
+Block::Block(int b_size) :
+    block_size(b_size)
 {
+    block = new unsigned char[block_size * block_size];
 }
 
+/*Block::Block(int b_size, unsigned char* b) :
+    block_size(b_size),
+    block(b)
+{
+}*/
+
 Block::~Block() {
-    for (unsigned int i = 0; i < blocks.size(); ++i) {
-        delete []blocks[i];
-    }
+    delete []block;
 
     for (unsigned int i = 0; i < textons.size(); ++i) {
         delete []textons[i];
     }
 }
 
-void Block::add_block(unsigned char* b) {
-    blocks.push_back(b);
+void Block::add_texton(unsigned char* texton) {
+    textons.push_back(texton);
 }
 
-void Block::compute_textons() {
-    for (unsigned int i = 0; i < blocks.size(); ++i) {
-        compute_texton(blocks[i]);
-
-    }
-}
-
-void Block::compute_texton(const unsigned char* block) {
-    for (int i = 0; i < block_size; ++i) {
-        for (int j = 0; j < block_size; ++j) {
-            //auto texton = new unsigned char[nb_neighbors];
-
-            (void) block;
-            // TODO
-
-
+std::ostream& operator<<(std::ostream& os, const Block block) {
+    os << "Blocks\n";
+    auto b_size = block.get_block_size();
+    for (int i = 0; i < b_size; ++i) {
+        for (int j = 0; j < b_size; ++j) {
+            os << (int) block.get_val_at(i, j) << ' ';
         }
+        os << '\n';
     }
+
+    return os;
 }

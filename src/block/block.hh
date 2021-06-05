@@ -1,32 +1,28 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 class Block {
     public:
-        Block(int nb_r, int nb_c, int size);
+        Block(int b_size);
+        Block(int b_size, unsigned char* b);
         ~Block();
 
-        void add_block(unsigned char* b);
-        void compute_textons();
+        void add_texton(unsigned char* texton);
 
-        /* Getters */
-        std::vector<unsigned char*> get_blocks() const { return blocks; }
+        int get_block_size() const { return block_size; }
+        unsigned char get_val_at(int i, int j) const { return block[i * block_size + j]; }
 
-        /* Setters */
-        void set_nb_neighbors(int nb) { nb_neighbors = nb; }
-
+        void set_at(int i, int j, unsigned char val) { block[i * block_size + j] = val; }
     private:
-        /* Methods */
-        void compute_texton(const unsigned char* block);
-
-        /* Attributes*/
-        int nb_rows;
-        int nb_cols;
-
         int block_size;
-        int nb_neighbors;
 
-        std::vector<unsigned char*> blocks;
+        // flatten array of size (block_size * block_size)
+        unsigned char* block;
+
+        // flatten array of shape (block_size * block_size, window_size * window)size - 1)
         std::vector<unsigned char*> textons;
 };
+
+std::ostream& operator<<(std::ostream& os, const Block block);
