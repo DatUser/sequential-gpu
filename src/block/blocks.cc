@@ -7,7 +7,7 @@ Blocks::Blocks(int nb_r, int nb_c, int size) :
 {
 }
 
-void Blocks::add_block(Block b) {
+void Blocks::add_block(Block* b) {
     blocks.push_back(b);
 }
 
@@ -17,7 +17,7 @@ void Blocks::compute_textons_blocks() {
     }
 }
 
-void Blocks::compute_textons_block(Block block) {
+void Blocks::compute_textons_block(const Block* block) {
     for (int i = 0; i < block_size; ++i) {
         for (int j = 0; j < block_size; ++j) {
             // Compute

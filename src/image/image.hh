@@ -23,7 +23,7 @@ class Image {
         /* Attributes */
         unsigned char* data;
     private:
-        Block get_block(int i, int j) const;
+        Block* get_block(int i, int j) const;
 
         /* Attributes */
         // width / height of the image

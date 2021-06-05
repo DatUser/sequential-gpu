@@ -99,13 +99,13 @@ Blocks Image::to_blocks() const {
     return blocks;
 }
 
-Block Image::get_block(int i, int j) const {
+Block* Image::get_block(int i, int j) const {
     // Get block of size: patch_size * patch_size
-    auto block = Block(patch_size);
+    auto block = new Block(patch_size);
     for (int k = 0; k < patch_size; ++k) {
         for (int l = 0; l < patch_size; ++ l) {
             unsigned char v = data[(i + k) * width + j + l];
-            block.set_at(k, l, v);
+            block->set_at(k, l, v);
         }
     }
 

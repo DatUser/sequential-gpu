@@ -9,15 +9,15 @@ class Blocks {
         Blocks(int nb_r, int nb_c, int size);
         ~Blocks() = default;
 
-        void add_block(Block b);
+        void add_block(Block* b);
         void compute_textons_blocks();
 
         /* Getters */
-        std::vector<Block> get_blocks() const { return blocks; }
+        std::vector<Block*> get_blocks() const { return blocks; }
 
     private:
         /* Methods */
-        void compute_textons_block(const Block block);
+        void compute_textons_block(const Block* block);
         void compute_pixel_texton(Block block, int i, int j);
 
         /* Attributes*/
@@ -30,6 +30,6 @@ class Blocks {
         int block_size;
         int window_size;
 
-        std::vector<Block> blocks;
+        std::vector<Block*> blocks;
 
 };
