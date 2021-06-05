@@ -18,8 +18,11 @@ int main() {
     // Compute blocks
     Blocks blocks = padded_img2.to_blocks();
 
-    //std::vector<Block> blocks_data = blocks.get_blocks();
-    //Block data = blocks_data[0];
-    //std::cout << data << '\n';
+    blocks.compute_textons_blocks();
+
+    std::vector<Block*> blocks_data = blocks.get_blocks();
+
+    Block* data = blocks_data[0];
+    std::cout << *data << '\n';
     return 0;
 }

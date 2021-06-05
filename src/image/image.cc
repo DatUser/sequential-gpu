@@ -101,7 +101,8 @@ Blocks Image::to_blocks() const {
 
 Block* Image::get_block(int i, int j) const {
     // Get block of size: patch_size * patch_size
-    auto block = new Block(patch_size);
+    // TODO change window size
+    auto block = new Block(patch_size, 3);
     for (int k = 0; k < patch_size; ++k) {
         for (int l = 0; l < patch_size; ++ l) {
             unsigned char v = data[(i + k) * width + j + l];

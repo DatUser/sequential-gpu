@@ -17,8 +17,8 @@ class Blocks {
 
     private:
         /* Methods */
-        void compute_textons_block(const Block* block);
-        void compute_pixel_texton(Block block, int i, int j);
+        void compute_textons_block(Block* block);
+        void compute_pixel_texton(Block* block, int i, int j);
 
         /* Attributes*/
         // Number of blocks row-wise and column-wise
