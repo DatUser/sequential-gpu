@@ -26,6 +26,9 @@ class Block {
 
         // flatten array of shape (block_size * block_size, window_size * window)size - 1)
         std::vector<bool*> textons;
+
+        // size (block_size * block_size)
+        std::vector<unsigned int> histogram;
 };
 
 std::ostream& operator<<(std::ostream& os, const Block block);

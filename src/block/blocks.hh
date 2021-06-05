@@ -11,6 +11,7 @@ class Blocks {
 
         void add_block(Block* b);
         void compute_textons_blocks();
+        void compute_histogram_blocks();
 
         /* Getters */
         std::vector<Block*> get_blocks() const { return blocks; }
@@ -19,6 +20,7 @@ class Blocks {
         /* Methods */
         void compute_textons_block(Block* block);
         void compute_pixel_texton(Block* block, int i, int j);
+        void compute_histogram_block(Block* block);
 
         /* Attributes*/
         // Number of blocks row-wise and column-wise
