@@ -3,11 +3,13 @@ set(OPT_FLAGS, "-Ofast")
 set(
     SRC_CPU
     src/image/image.cc
+    src/block/block.cc
 )
 
 include_directories(
     src
     src/image
+    src/block
 )
 
 cmake_minimum_required(VERSION 3.12)

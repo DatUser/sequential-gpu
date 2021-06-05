@@ -29,7 +29,7 @@ Image::~Image() {
     }
 }
 
-void Image::save_ppm(const char* path) {
+void Image::save_ppm(const char* path) const {
     std::ofstream ofs(path, std::ios_base::out | std::ios_base::binary);
     ofs << "P6" << std::endl << width << ' ' << height << std::endl << "255" << std::endl;
 
@@ -40,7 +40,7 @@ void Image::save_ppm(const char* path) {
     ofs.close();
 }
 
-Image Image::to_gray() {
+Image Image::to_gray() const {
     Image img(width, height, 1);
 
     auto new_data = new unsigned char[width * height];
@@ -91,4 +91,21 @@ Image Image::add_padding_col() {
 
     new_img.set_data(new_data);
     return new_img;
+}
+
+Block Image::to_blocks() const {
+    Block blocks(height / 16, width / 16);
+    for (int i = 0; i < height; i += 16) {
+        for (int j = 0; j < width; j += 16) {
+            auto block_data = new unsigned char[16 * 16];
+            for (int k = 0; k < 16; ++k) {
+                for (int l = 0; l < 16; ++ l) {
+                    block_data[k * 16 + l] = data[(i + k) * width + j + l];
+                }
+            }
+            blocks.add_block(block_data);
+        }
+    }
+
+    return blocks;
 }
