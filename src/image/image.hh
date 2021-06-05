@@ -9,6 +9,8 @@ class Image {
         void save_ppm(const char* path);
 
         Image to_gray();
+        Image add_padding_row();
+        Image add_padding_col();
 
         void set_data(unsigned char* data) { this->data = data; }
 

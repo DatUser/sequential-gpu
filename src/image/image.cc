@@ -52,3 +52,43 @@ Image Image::to_gray() {
     img.set_data(new_data);
     return img;
 }
+
+Image Image::add_padding_row() {
+    int new_height = height + 16 - height % 16;
+
+    Image new_img(width, new_height, 1);
+    auto new_data = new unsigned char[width * new_height];
+
+    for (int i = 0; i < new_height; ++i) {
+        for (int j = 0; j < width; ++j) {
+            if (i >= height) {
+                new_data[i * width + j] = data[(height-1) * width + j];
+            } else {
+                new_data[i * width + j] = data[i * width + j];
+            }
+        }
+    }
+
+    new_img.set_data(new_data);
+    return new_img;
+}
+
+Image Image::add_padding_col() {
+    int new_width = width + 16 - width % 16;
+
+    Image new_img(new_width, height, 1);
+    auto new_data = new unsigned char[new_width * height];
+
+    for (int i = 0; i < height; ++i) {
+        for (int j = 0; j < new_width; ++j) {
+            if (j >= width) {
+                new_data[i * new_width + j] = data[i * width + (width-1)];
+            } else {
+                new_data[i * new_width + j] = data[i * width + j];
+            }
+        }
+    }
+
+    new_img.set_data(new_data);
+    return new_img;
+}
