@@ -7,11 +7,11 @@
 #include <fstream>
 #include <cstdio>
 
-Image::Image(int w, int h, int nb_chan) :
+Image::Image(int w, int h, int nb_chan, int p_size) :
     width(w),
     height(h),
     nb_channels(nb_chan),
-    patch_size(16)
+    patch_size(p_size)
 {
     data = new unsigned char[w * h * nb_chan];
 }
@@ -44,7 +44,7 @@ void Image::save_ppm(const char* path) const {
 }
 
 Image Image::to_gray() const {
-    Image img(width, height, 1);
+    Image img(width, height, 1, patch_size);
 
     for (int i = 0; i < width * height; ++i) {
         img.data[i] = data[i * 3] * 0.2989 + data[i * 3 + 1] * 0.5870 + data[i * 3 + 2] * 0.1140;
@@ -56,7 +56,7 @@ Image Image::to_gray() const {
 Image Image::add_padding_row() const {
     int new_height = height + patch_size - height % patch_size;
 
-    Image new_img(width, new_height, 1);
+    Image new_img(width, new_height, 1, patch_size);
     for (int i = 0; i < new_height; ++i) {
         for (int j = 0; j < width; ++j) {
             if (i >= height) {
@@ -73,7 +73,7 @@ Image Image::add_padding_row() const {
 Image Image::add_padding_col() const {
     int new_width = width + patch_size - width % patch_size;
 
-    Image new_img(new_width, height, 1);
+    Image new_img(new_width, height, 1, patch_size);
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < new_width; ++j) {
             if (j >= width) {

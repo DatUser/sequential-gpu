@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-inline void save_as_csv(const char* filepath, const char* sep,
+inline void save_csv(const char* filepath, const char* sep,
         std::vector<unsigned char> data, unsigned int nb_cols) {
     std::ofstream csv_ofstream(filepath);
 

@@ -4,10 +4,14 @@
 #include "save.hh"
 
 int main() {
-    // LBP
+    // LBP algorithm
 
     // Load img
     Image img("data/test.jpg");
+
+    // Set patch size
+    int patch_size = 16;
+    img.set_patch_size(patch_size);
 
     // Img to grayscale
     auto other_img = img.to_gray();
@@ -30,7 +34,7 @@ int main() {
 
     // Step 4: Concatenate histograms
     std::vector<unsigned char> hist = blocks.get_concatenated_histograms();
-    save_as_csv("data/histogram.csv", ",", hist, blocks.get_block_size() * blocks.get_block_size());
+    save_csv("data/histogram.csv", ",", hist, patch_size * patch_size);
 
     std::vector<Block*> blocks_data = blocks.get_blocks();
     Block* data = blocks_data[0];

@@ -4,7 +4,7 @@
 
 class Image {
     public:
-        Image(int width, int height, int nb_channels);
+        Image(int width, int height, int nb_channels, int patch_size);
         Image(const char* path);
         ~Image();
 
@@ -19,9 +19,6 @@ class Image {
 
         /* Setters */
         void set_patch_size(int p) { patch_size = p; }
-
-        /* Attributes */
-        unsigned char* data;
     private:
         Block* get_block(int i, int j, int window_size) const;
 
@@ -31,6 +28,7 @@ class Image {
         int width;
         int height;
         int nb_channels;
+        unsigned char* data;
 
         // how to divide the image
         int patch_size;
