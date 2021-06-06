@@ -9,6 +9,7 @@ class Block {
         ~Block();
 
         void compute_texton_block();
+        void compute_histogram_block();
 
         unsigned char get_val_at(int i, int j) const { return block[i * block_size + j]; }
         unsigned char get_texton_at(int i, int j) const { return texton[i * block_size + j]; }
@@ -18,6 +19,7 @@ class Block {
         /* Getters */
         int get_block_size() const { return block_size; }
         int get_window_size() const { return window_size; }
+        std::vector<unsigned int> get_histogram() const { return histogram; }
 
     private:
         /* Methods */

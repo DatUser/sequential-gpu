@@ -1,4 +1,5 @@
 #include <bitset>
+#include <iomanip>
 
 #include "block.hh"
 
@@ -8,6 +9,7 @@ Block::Block(int b_size, int w_size) :
 {
     block = new unsigned char[block_size * block_size];
     texton = new unsigned char[block_size * block_size];
+    histogram = std::vector<unsigned int>(block_size * block_size, 0);
 }
 
 Block::~Block() {
@@ -49,8 +51,14 @@ void Block::compute_pixel_texton(int i, int j, int& idx) {
     ++idx;
 }
 
+void Block::compute_histogram_block() {
+    for (int i = 0; i < block_size * block_size; ++i) {
+        ++histogram[texton[i]];
+    }
+}
+
 std::ostream& operator<<(std::ostream& os, const Block& block) {
-    os << "Blocks\n";
+    os << "Block\n";
     auto b_size = block.get_block_size();
     for (int i = 0; i < b_size; ++i) {
         for (int j = 0; j < b_size; ++j) {
@@ -59,13 +67,26 @@ std::ostream& operator<<(std::ostream& os, const Block& block) {
         os << '\n';
     }
 
-    os << "-------\nTextons (first 3):\n";
-
+    os << "-------\nTextons:\n";
+    os << "Bits (first 3)\n";
     for (int i = 0; i < 3; ++i) {
         int texton = block.get_texton_at(0, i);
         os << "At (0, " << i << "): "
             << std::bitset<8>(texton).to_string() << ": "
             << texton << '\n';
+    }
+
+
+    for (int i = 0; i < b_size; ++i) {
+        for (int j = 0; j < b_size; ++j) {
+            os << std::setw(3) << (int) block.get_texton_at(i, j) << ' ';
+        }
+        os << '\n';
+    }
+    os << "-------\nHistogram (first 10):\n";
+    const auto histogram = block.get_histogram();
+    for (int i = 0; i < 10; ++i) {
+        os << "hist[" << i << "] = " << histogram[i] << '\n';
     }
 
     return os;
