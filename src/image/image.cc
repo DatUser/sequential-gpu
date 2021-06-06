@@ -87,22 +87,21 @@ Image Image::add_padding_col() const {
     return new_img;
 }
 
-Blocks Image::to_blocks() const {
+Blocks Image::to_blocks(int window_size) const {
     Blocks blocks(height / patch_size, width / patch_size, patch_size);
 
     for (int i = 0; i < height; i += patch_size) {
         for (int j = 0; j < width; j += patch_size) {
-            blocks.add_block(get_block(i, j));
+            blocks.add_block(get_block(i, j, window_size));
         }
     }
 
     return blocks;
 }
 
-Block* Image::get_block(int i, int j) const {
+Block* Image::get_block(int i, int j, int window_size) const {
     // Get block of size: patch_size * patch_size
-    // TODO change window size
-    auto block = new Block(patch_size, 3);
+    Block* block = new Block(patch_size, window_size);
     for (int k = 0; k < patch_size; ++k) {
         for (int l = 0; l < patch_size; ++ l) {
             unsigned char v = data[(i + k) * width + j + l];

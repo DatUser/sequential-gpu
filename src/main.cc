@@ -16,7 +16,8 @@ int main() {
     padded_img2.save_ppm("data/padded_test.ppm");
 
     // Compute blocks
-    Blocks blocks = padded_img2.to_blocks();
+    int window_size = 3;
+    Blocks blocks = padded_img2.to_blocks(window_size);
 
     blocks.compute_textons_blocks();
 

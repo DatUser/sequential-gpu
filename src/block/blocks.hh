@@ -18,8 +18,6 @@ class Blocks {
 
     private:
         /* Methods */
-        void compute_textons_block(Block* block);
-        void compute_pixel_texton(Block* block, int i, int j);
         void compute_histogram_block(Block* block);
 
         /* Attributes*/

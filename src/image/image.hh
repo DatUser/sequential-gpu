@@ -13,7 +13,7 @@ class Image {
         Image add_padding_row() const;
         Image add_padding_col() const;
 
-        Blocks to_blocks() const;
+        Blocks to_blocks(int window_size) const;
 
         void save_ppm(const char* path) const;
 
@@ -23,7 +23,7 @@ class Image {
         /* Attributes */
         unsigned char* data;
     private:
-        Block* get_block(int i, int j) const;
+        Block* get_block(int i, int j, int window_size) const;
 
         /* Attributes */
         // width / height of the image
