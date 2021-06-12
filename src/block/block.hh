@@ -20,6 +20,7 @@ class Block {
         int get_block_size() const { return block_size; }
         int get_window_size() const { return window_size; }
         std::vector<unsigned int> get_histogram() const { return histogram; }
+	unsigned char* get_block() const { return block; }
 
     private:
         /* Methods */

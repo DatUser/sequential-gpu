@@ -18,6 +18,7 @@ class Blocks {
         /* Getters */
         std::vector<Block*> get_blocks() const { return blocks; }
         int get_block_size() const { return block_size; }
+	int get_nb_blocks() const { return nb_rows * nb_cols; }
 
     private:
         /* Attributes*/

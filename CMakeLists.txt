@@ -5,6 +5,7 @@ set(
     src/image/image.cu
     src/block/blocks.cu
     src/block/block.cu
+    src/gpu/block-gpu.cu
 )
 
 include_directories(
