@@ -8,13 +8,16 @@ Block::Block(int b_size, int w_size) :
     window_size(w_size)
 {
     block = new unsigned char[block_size * block_size];
-    texton = new unsigned char[block_size * block_size];
-    histogram = std::vector<unsigned int>(block_size * block_size, 0);
+    h_texton = new unsigned char[block_size * block_size];
+    h_histogram = std::vector<unsigned int>(block_size * block_size, 0);
+
+    cudaMalloc(&histogram, block_size * block_size * sizeof(unsigned int));
+    cudaMalloc(&texton, block_size * block_size * sizeof(char));
 }
 
 Block::~Block() {
     delete []block;
-    delete []texton;
+    delete []h_texton;
 }
 
 void Block::compute_texton_block() {
@@ -24,6 +27,9 @@ void Block::compute_texton_block() {
             compute_pixel_texton(i, j, texton_idx);
         }
     }
+
+    cudaMemcpy(texton, h_texton, block_size * block_size * sizeof(char),
+	cudaMemcpyHostToDevice);
 }
 
 void Block::compute_pixel_texton(int i, int j, int& idx) {
@@ -47,14 +53,27 @@ void Block::compute_pixel_texton(int i, int j, int& idx) {
             }
         }
     }
-    texton[idx] = value;
+    h_texton[idx] = value;
     ++idx;
 }
 
+//__host__ __device__
 void Block::compute_histogram_block() {
     for (int i = 0; i < block_size * block_size; ++i) {
-        ++histogram[texton[i]];
+        ++h_histogram[h_texton[i]];
     }
+
+    /*cudaMemcpy(histogram, h_histogram.data(), h_histogram.size(),
+	cudaMemcpyHostToDevice);*/
+}
+
+__device__
+void Block::compute_histogram_block_gpu()
+{
+  int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (i < block_size * block_size)//get_h_histogram_size())
+      ++histogram[texton[i]];
 }
 
 std::ostream& operator<<(std::ostream& os, const Block& block) {
@@ -70,7 +89,7 @@ std::ostream& operator<<(std::ostream& os, const Block& block) {
     os << "-------\nTextons:\n";
     os << "Bits (first 3)\n";
     for (int i = 0; i < 3; ++i) {
-        int texton = block.get_texton_at(0, i);
+        int texton = block.get_h_texton_at(0, i);
         os << "At (0, " << i << "): "
             << std::bitset<8>(texton).to_string() << ": "
             << texton << '\n';
@@ -79,12 +98,12 @@ std::ostream& operator<<(std::ostream& os, const Block& block) {
 
     for (int i = 0; i < b_size; ++i) {
         for (int j = 0; j < b_size; ++j) {
-            os << std::setw(3) << (int) block.get_texton_at(i, j) << ' ';
+            os << std::setw(3) << (int) block.get_h_texton_at(i, j) << ' ';
         }
         os << '\n';
     }
     os << "-------\nHistogram (first 10):\n";
-    const auto histogram = block.get_histogram();
+    const auto histogram = block.get_h_histogram();
     for (int i = 0; i < 10; ++i) {
         os << "hist[" << i << "] = " << histogram[i] << '\n';
     }

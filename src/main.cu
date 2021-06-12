@@ -1,10 +1,26 @@
 #include <iostream>
+#include <stdio.h>
 
 #include "image.hh"
 #include "save.hh"
 
+__global__
+void print_kernel() {
+  printf("Hello from block %d, thread %d\n",blockIdx.x, threadIdx.x);
+}
+
+__global__
+void compute_histogram_blocks_gpu(Blocks& blocks)
+{
+    int i = blockIdx.x * blockDim.x +threadIdx.x;
+    if (i < blocks.get_blocks_size())
+      blocks.compute_histogram_blocks_gpu();
+}
+
 int main() {
     // LBP algorithm
+    print_kernel<<<2, 3>>>();
+    cudaDeviceSynchronize();
 
     // Load img
     Image img("data/test.jpg");
@@ -30,13 +46,17 @@ int main() {
     blocks.compute_textons_blocks();
 
     // Step 3: Compute histogram
-    blocks.compute_histogram_blocks();
+    //blocks.compute_histogram_blocks_gpu();
+    compute_histogram_blocks_gpu<<<blocks.get_blocks_size(), 1>>>(blocks);
+    cudaDeviceSynchronize();
+    cudaMemcpy(blocks.get_hblocks(), blocks.get_blocks(),
+	blocks.get_blocks_size(), cudaMemcpyDeviceToHost);
 
     // Step 4: Concatenate histograms
     std::vector<unsigned char> hist = blocks.get_concatenated_histograms();
     save_csv("data/histogram.csv", ",", hist, patch_size * patch_size);
 
-    std::vector<Block*> blocks_data = blocks.get_blocks();
+    Block** blocks_data = blocks.get_hblocks();
     Block* data = blocks_data[0];
     std::cout << *data << '\n';
     return 0;

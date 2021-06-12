@@ -9,17 +9,24 @@ class Block {
         ~Block();
 
         void compute_texton_block();
+
+	//__host__ __device__
         void compute_histogram_block();
 
+	__device__
+        void compute_histogram_block_gpu();
+
         unsigned char get_val_at(int i, int j) const { return block[i * block_size + j]; }
-        unsigned char get_texton_at(int i, int j) const { return texton[i * block_size + j]; }
+        unsigned char get_h_texton_at(int i, int j) const { return h_texton[i * block_size + j]; }
 
         void set_at(int i, int j, unsigned char val) { block[i * block_size + j] = val; }
 
         /* Getters */
         int get_block_size() const { return block_size; }
         int get_window_size() const { return window_size; }
-        std::vector<unsigned int> get_histogram() const { return histogram; }
+        std::vector<unsigned int> get_h_histogram() const { return h_histogram; }
+	__host__ __device__
+	int get_h_histogram_size() const { return h_histogram.size(); }
 
     private:
         /* Methods */
@@ -33,10 +40,16 @@ class Block {
         unsigned char* block;
 
         // flatten array of shape (block_size * block_size)
+        unsigned char* h_texton;
+
+	//Device texton
         unsigned char* texton;
 
         // size (block_size * block_size)
-        std::vector<unsigned int> histogram;
+        std::vector<unsigned int> h_histogram;
+
+	//Device histogram
+	unsigned int* histogram;
 };
 
 std::ostream& operator<<(std::ostream& os, const Block& block);

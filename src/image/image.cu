@@ -96,6 +96,16 @@ Blocks Image::to_blocks(int window_size) const {
         }
     }
 
+    Block* tmp = (Block*) malloc(blocks.get_blocks_size() * sizeof(Block));
+    for (int i = 0; i < blocks.get_blocks_size(); i++)
+      tmp[i] = *blocks.get_hblocks()[i];
+
+
+    cudaMemcpy(blocks.get_blocks(), tmp,
+	blocks.get_blocks_size() * sizeof(Block), cudaMemcpyHostToDevice);
+
+    free(tmp);
+
     return blocks;
 }
 
