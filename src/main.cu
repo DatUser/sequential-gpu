@@ -39,8 +39,8 @@ int main() {
 
     auto ms_gpu = std::chrono::duration_cast<std::chrono::milliseconds>(t2_gpu - t1_gpu);
 
-    //for (int i = 0; i < 8; i++)
-    //  std::cout << (int) blocks_gpu.textons_device[0][i] << std::endl;
+    /*for (int i = 0; i < 8; i++)
+      std::cout << (int) blocks_gpu.textons_device[i] << std::endl;*/
 
     // CPU
     //std::cout << "CPU version\n\n";
@@ -49,6 +49,10 @@ int main() {
     auto t2_cpu = std::chrono::high_resolution_clock::now();
 
     auto ms_cpu = std::chrono::duration_cast<std::chrono::milliseconds>(t2_cpu - t1_cpu);
+
+    std::cout << "CPU  Values" << std::endl;
+    /*for (int i = 0; i < 8; i++)
+      std::cout << (int) blocks.get_blocks()[0]->get_texton_at(0, i) << std::endl;*/
 
     std::cout << "GPU excution time:\n" << ms_gpu.count() << "ms\n\n";
     std::cout << "CPU execution time:\n" << ms_cpu.count() << "ms\n";

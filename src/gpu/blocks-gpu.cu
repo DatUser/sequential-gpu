@@ -39,8 +39,8 @@ void BlocksGPU::compute_textons() {
     //dim3 threads_(nb_blocks, block_size, block_size);
     printf("%d\n", (nb_blocks_cuda + nb_blocks) / nb_blocks_cuda);
     printf("%d\n", nb_blocks);
-    dim3 threads_(256, block_size, block_size);
-    dim3 blocks_(4 , 1, 1);
+    dim3 threads_(4, block_size, block_size);
+    dim3 blocks_((nb_blocks + 4) / 4, 1, 1);
 
     //for (int i = 0; i < nb_blocks; ++i) {
     compute_texton_block_gpu<<<blocks_, threads_>>>(textons_device,
