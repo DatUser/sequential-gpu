@@ -5,18 +5,13 @@ void compute_texton_block_gpu(unsigned char* texton, unsigned char* block_img,
     int block_size, int window_size) {
     int i = blockDim.x *blockIdx.x + threadIdx.x;
     int j = blockDim.y *blockIdx.y + threadIdx.y;
-    //int texton_idx = i * block_size + j;
-    /*for (int i = 0; i < block_size; ++i) {
-        for (int j = 0; j < block_size; ++j) {
-            compute_pixel_texton_gpu(i, j, texton_idx);
-        }
-    }*/
+
     if (i * block_size + j < block_size * block_size)
     {
       compute_pixel_texton_gpu(i, j, texton, block_img,
-	  block_size, window_size);
+                               block_size, window_size);
       //printf("%i\n", texton[texton_idx]);
-      printf("i: %i\nj: %i\nvalue:%i\n---\n", i, j, texton[i * block_size + j]);
+      //printf("i: %i\nj: %i\nvalue:%i\n---\n", i, j, texton[i * block_size + j]);
     }
 }
 
