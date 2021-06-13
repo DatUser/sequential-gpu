@@ -19,8 +19,10 @@ public:
     void compute_textons();
 
     // Data on the GPU
-    unsigned char** textons_device;
-    unsigned char** blocks_device;
+    // 3 dim tensor
+    // shape=(nb_blocks, block_size, block_size)
+    unsigned char* textons_device;
+    unsigned char* blocks_device;
 
     // number of blocks in our image
     int nb_blocks;
