@@ -10,15 +10,12 @@ BlocksGPU::BlocksGPU(Blocks blocks, int w_size) {
     nb_blocks = blocks.get_nb_blocks();
     window_size = w_size;
 
-    printf("Before alloc textons\n");
     cudaMallocManaged(&textons_device, sizeof(unsigned char) * nb_blocks * size);
     cudaCheckError();
 
-    printf("Before alloc blocks\n");
     cudaMalloc(&blocks_device, sizeof(unsigned char) * nb_blocks * size);
     cudaCheckError();
 
-    printf("Before alloc loop\n");
     for (int i = 0; i < nb_blocks; ++i) {
         // copy the data on the device
         cudaMemcpy((blocks_device + i * size),
@@ -35,21 +32,16 @@ BlocksGPU::~BlocksGPU() {
 }
 
 void BlocksGPU::compute_textons() {
-    int nb_blocks_cuda = 64;
-    //dim3 threads_(nb_blocks, block_size, block_size);
-    printf("%d\n", (nb_blocks_cuda + nb_blocks) / nb_blocks_cuda);
-    printf("%d\n", nb_blocks);
-    dim3 threads_(4, block_size, block_size);
-    dim3 blocks_((nb_blocks + 4) / 4, 1, 1);
+    int nb_blocks_cuda_x = 4;
+    dim3 threads_(nb_blocks_cuda_x, block_size, block_size);
+    dim3 blocks_((nb_blocks + nb_blocks_cuda_x) / nb_blocks_cuda_x, 1, 1);
 
-    //for (int i = 0; i < nb_blocks; ++i) {
     compute_texton_block_gpu<<<blocks_, threads_>>>(textons_device,
                                                     blocks_device,
                                                     block_size,
                                                     window_size,
                                                     nb_blocks);
     cudaCheckError();
-   // }
 
     cudaDeviceSynchronize();
     cudaCheckError();
