@@ -2,15 +2,8 @@
 
 #include "image.hh"
 #include "save.hh"
-#include "gpu/block-gpu.hh"
-
-#define cudaCheckError() {                                                                       \
-        cudaError_t e=cudaGetLastError();                                                        \
-        if(e!=cudaSuccess) {                                                                     \
-            printf("Cuda failure %s:%d: '%s'\n",__FILE__,__LINE__,cudaGetErrorString(e));        \
-            exit(EXIT_FAILURE);                                                                  \
-        }                                                                                        \
-    }
+//#include "gpu/block-gpu.hh"
+#include "blocks-gpu.hh"
 
 int main() {
     // LBP algorithm
@@ -37,46 +30,14 @@ int main() {
 
     // Step 2: Compute textons
     // GPU
-    int block_size = blocks.get_blocks()[0]->get_block_size();
-    int size = block_size * block_size;
-    unsigned char** textons_device = 
-      (unsigned char**) malloc(sizeof(unsigned char*) * blocks.get_nb_blocks());
-    unsigned char** blocks_device = 
-      (unsigned char**) malloc(sizeof(unsigned char*) * blocks.get_nb_blocks());
-    for (int i = 0; i < blocks.get_nb_blocks(); i++)
-    {
-      //unsigned char* texton_device = malloc(blocks.get_blocks_size());
-      cudaMallocManaged(&textons_device[i], size * sizeof(unsigned char));
-      cudaCheckError();
-      cudaMalloc(&blocks_device[i], size * sizeof(unsigned char));
-      cudaCheckError();
-      cudaMemcpy(blocks_device[i], blocks.get_blocks()[i]->get_block(),
-	  16 * 16 * sizeof(unsigned char), cudaMemcpyHostToDevice);
-      cudaCheckError();
-    }
-
-    dim3 threads_(block_size, block_size);
-    dim3 blocks_(1, 1);
+    BlocksGPU blocks_gpu(blocks, window_size);
+    blocks_gpu.compute_textons();
 
     for (int i = 0; i < 8; i++)
-      std::cout << (int) textons_device[0][i] << std::endl;
+      std::cout << (int) blocks_gpu.textons_device[0][i] << std::endl;
 
-    std::cout << std::endl;
-
-    for (int i = 0; i < /*blocks.get_nb_blocks()*/1; i++)
-    {
-	compute_texton_block_gpu<<<blocks_, threads_>>>(textons_device[i],
-	    blocks_device[i], block_size, window_size);
-        cudaCheckError();
-    }
-
-    cudaDeviceSynchronize();
-    cudaCheckError();
-
-    blocks.compute_textons_blocks();//CPU
-
-    for (int i = 0; i < 8; i++)
-      std::cout << (int) textons_device[0][i] << std::endl;
+    // CPU
+    blocks.compute_textons_blocks();
 
     // Step 3: Compute histogram
     blocks.compute_histogram_blocks();
@@ -88,17 +49,6 @@ int main() {
     std::vector<Block*> blocks_data = blocks.get_blocks();
     Block* data = blocks_data[0];
     std::cout << *data << '\n';
-
-    for (int i = 0; i < blocks.get_nb_blocks(); i++)
-    {
-      cudaFree(textons_device[i]);
-      cudaCheckError();
-      cudaFree(blocks_device[i]);
-      cudaCheckError();
-    }
-
-    free(textons_device);
-    free(blocks_device);
 
     return 0;
 }

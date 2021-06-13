@@ -6,12 +6,14 @@ set(
     src/block/blocks.cu
     src/block/block.cu
     src/gpu/block-gpu.cu
+    src/gpu/blocks-gpu.cu
 )
 
 include_directories(
     src
     src/image
     src/block
+    src/gpu
 )
 
 cmake_minimum_required(VERSION 3.12)
@@ -30,7 +32,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 add_executable(lbp)
 target_sources(lbp PRIVATE "src/main.cu" ${SRC_CPU})
 
-target_compile_options(lbp PRIVATE -Wall -Wextra)
+#target_compile_options(lbp PRIVATE -Wall -Wextra)
+target_compile_options(lbp PRIVATE)
 
 set_target_properties(lbp PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 set_target_properties(lbp PROPERTIES INTERPROCEDURAL_OPTIMIZATION ON)
