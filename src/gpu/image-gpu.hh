@@ -18,6 +18,12 @@ public:
     void save_gray_ppm(const char* path) const;
     void save_padded_gray_ppm(const char* path) const;
 
+    /* getters */
+    unsigned char* get_gray_data() const { return gray_data; }
+    unsigned char* get_padded_gray_data() const { return padded_gray_data; }
+    int get_size() const { return width * height; }
+    int get_padded_size() const { return padded_width * padded_height; }
+
 private:
     // gpu image data
     // shape=(height, width, nb_channels)
