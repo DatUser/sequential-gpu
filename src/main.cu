@@ -1,19 +1,23 @@
 #include <iostream>
 #include <chrono>
 
-#include "image.hh"
+//#include "image.hh"
 #include "save.hh"
 //#include "gpu/block-gpu.hh"
 #include "blocks-gpu.hh"
+#include "image-gpu.hh"
 
 int main() {
     // LBP algorithm
 
     // Load img
-    Image img("data/test.jpg");
+    ImageGPU img("data/test.jpg");
+    img.to_gray();
+    img.save_gray_ppm("gray.ppm");
+
 
     // Set patch size
-    int patch_size = 16;
+    /*int patch_size = 16;
     img.set_patch_size(patch_size);
 
     // Img to grayscale
@@ -37,23 +41,23 @@ int main() {
     blocks_gpu.compute_textons();
     auto t2_gpu = std::chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double> ms_gpu = t2_gpu - t1_gpu;
+    std::chrono::duration<double> ms_gpu = t2_gpu - t1_gpu;*/
 
     /*for (int i = 0; i < 8; i++)
       std::cout << (int) blocks_gpu.textons_device[i] << std::endl;*/
 
     // CPU
     //std::cout << "CPU version\n\n";
-    auto t1_cpu = std::chrono::high_resolution_clock::now();
+/*    auto t1_cpu = std::chrono::high_resolution_clock::now();
     blocks.compute_textons_blocks();
     auto t2_cpu = std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<double> ms_cpu = t2_cpu - t1_cpu;
 
-    std::cout << "CPU  Values" << std::endl;
+    std::cout << "CPU  Values" << std::endl;*/
     /*for (int i = 0; i < 8; i++)
       std::cout << (int) blocks.get_blocks()[0]->get_texton_at(0, i) << std::endl;*/
-
+/*
     std::cout << "GPU excution time:\n" << ms_gpu.count() * 1000 << "ms\n\n";
     std::cout << "CPU execution time:\n" << ms_cpu.count() * 1000 << "ms\n";
 
@@ -65,7 +69,7 @@ int main() {
     save_csv("data/histogram.csv", ",", hist, patch_size * patch_size);
 
     std::vector<Block*> blocks_data = blocks.get_blocks();
-    Block* data = blocks_data[0];
+    Block* data = blocks_data[0];*/
     //std::cout << *data << '\n';
 
     return 0;
