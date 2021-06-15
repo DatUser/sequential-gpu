@@ -13,7 +13,9 @@ int main() {
     // Load img
     ImageGPU img("data/test.jpg");
     img.to_gray();
+    img.padd_image();
     img.save_gray_ppm("gray.ppm");
+    img.save_padded_gray_ppm("padded_gray.ppm");
 
 
     // Set patch size

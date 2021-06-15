@@ -14,7 +14,9 @@ public:
     ~ImageGPU();
 
     void to_gray();
+    void padd_image();
     void save_gray_ppm(const char* path) const;
+    void save_padded_gray_ppm(const char* path) const;
 
 private:
     // gpu image data
@@ -25,16 +27,18 @@ private:
     // shape=(height, width)
     unsigned char* gray_data;
 
+    // gpu padded image
+    unsigned char* padded_gray_data;
+
     /* Attributes */
     // width / height of the image
     // number of channels of the image (r/g/b)
     int width;
+    int padded_width;
+    int padded_height;
     int height;
     int nb_channels;
 
     // how to divide the image
     int patch_size;
 };
-
-__global__
-void to_gray_gpu(unsigned char* data);
