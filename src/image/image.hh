@@ -1,5 +1,8 @@
 #pragma once
 
+//#define STB_IMAGE_IMPLEMENTATION
+//#include "stb_image.h"
+
 #include "blocks.hh"
 
 class Image {
@@ -16,6 +19,10 @@ class Image {
         Blocks to_blocks(int window_size) const;
 
         void save_ppm(const char* path) const;
+
+        /* Getters */
+        unsigned char* get_data() const { return data; }
+        int get_size() const { return width * height; }
 
         /* Setters */
         void set_patch_size(int p) { patch_size = p; }

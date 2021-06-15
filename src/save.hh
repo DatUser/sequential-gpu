@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <vector>
 
 inline void save_csv(const char* filepath, const char* sep,
         std::vector<unsigned char> data, unsigned int nb_cols) {

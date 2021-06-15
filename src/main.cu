@@ -1,19 +1,51 @@
 #include <iostream>
 #include <chrono>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "image.hh"
 #include "save.hh"
-//#include "gpu/block-gpu.hh"
 #include "blocks-gpu.hh"
+#include "image-gpu.hh"
+#include "tests.hh"
 
 int main() {
     // LBP algorithm
 
     // Load img
-    Image img("data/test.jpg");
+    // GPU
+    ImageGPU img_gpu("data/test.jpg");
+    auto t1_gpu = std::chrono::high_resolution_clock::now();
+    img_gpu.to_gray();
+    img_gpu.padd_image();
+    auto t2_gpu = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> ms_gpu = t2_gpu - t1_gpu;
+    //img_gpu.save_gray_ppm("gray.ppm");
+    //img_gpu.save_padded_gray_ppm("padded_gray.ppm");
+
+    // CPU
+    Image img_cpu("data/test.jpg");
+    auto t1_cpu = std::chrono::high_resolution_clock::now();
+    img_cpu.set_patch_size(16);
+    auto other_img = img_cpu.to_gray();
+    auto padded_img = other_img.add_padding_row();
+    auto padded_img2 = padded_img.add_padding_col();
+    auto t2_cpu = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> ms_cpu = t2_cpu - t1_cpu;
+
+    std::cout << "GPU excution time:\n" << ms_gpu.count() * 1000 << "ms\n\n";
+    std::cout << "CPU execution time:\n" << ms_cpu.count() * 1000 << "ms\n";
+
+    // TESTS
+    bool are_eq1 = are_images_equal(other_img.get_data(), img_gpu.get_gray_data(), other_img.get_size(), img_gpu.get_size());
+    bool are_eq2 = are_images_equal(padded_img2.get_data(), img_gpu.get_padded_gray_data(), padded_img2.get_size(), img_gpu.get_padded_size());
+    std::cout << "--------------\n";
+    std::cout << "Gray Img test: " << std::boolalpha << are_eq1 << '\n';
+    std::cout << "Padded Gray Img test: " << std::boolalpha << are_eq2 << '\n';
 
     // Set patch size
-    int patch_size = 16;
+    /*int patch_size = 16;
     img.set_patch_size(patch_size);
 
     // Img to grayscale
@@ -37,23 +69,23 @@ int main() {
     blocks_gpu.compute_textons();
     auto t2_gpu = std::chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double> ms_gpu = t2_gpu - t1_gpu;
+    std::chrono::duration<double> ms_gpu = t2_gpu - t1_gpu;*/
 
     /*for (int i = 0; i < 8; i++)
       std::cout << (int) blocks_gpu.textons_device[i] << std::endl;*/
 
     // CPU
     //std::cout << "CPU version\n\n";
-    auto t1_cpu = std::chrono::high_resolution_clock::now();
+/*    auto t1_cpu = std::chrono::high_resolution_clock::now();
     blocks.compute_textons_blocks();
     auto t2_cpu = std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<double> ms_cpu = t2_cpu - t1_cpu;
 
-    std::cout << "CPU  Values" << std::endl;
+    std::cout << "CPU  Values" << std::endl;*/
     /*for (int i = 0; i < 8; i++)
       std::cout << (int) blocks.get_blocks()[0]->get_texton_at(0, i) << std::endl;*/
-
+/*
     std::cout << "GPU excution time:\n" << ms_gpu.count() * 1000 << "ms\n\n";
     std::cout << "CPU execution time:\n" << ms_cpu.count() * 1000 << "ms\n";
 
@@ -65,7 +97,7 @@ int main() {
     save_csv("data/histogram.csv", ",", hist, patch_size * patch_size);
 
     std::vector<Block*> blocks_data = blocks.get_blocks();
-    Block* data = blocks_data[0];
+    Block* data = blocks_data[0];*/
     //std::cout << *data << '\n';
 
     return 0;
