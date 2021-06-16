@@ -18,6 +18,9 @@ public:
     // compute all the textons (each texton is computed on GPU)
     void compute_textons();
     void compute_histogram_blocks();
+    int get_concatenated_histograms_size() {
+        return nb_blocks * block_size * block_size;
+    }
 
     // Data on the GPU
     // 3 dim tensor

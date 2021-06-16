@@ -27,9 +27,9 @@ void Blocks::compute_histogram_blocks() {
     }
 }
 
-std::vector<unsigned char> Blocks::get_concatenated_histograms() {
+std::vector<int> Blocks::get_concatenated_histograms() {
     // Concatenate histograms
-    std::vector<unsigned char> hist;
+    std::vector<int> hist;
     for (unsigned int i = 0; i < blocks.size(); ++i) {
         auto block_hist = blocks[i]->get_histogram();
         std::move(block_hist.begin(), block_hist.end(), std::back_inserter(hist));
