@@ -75,6 +75,28 @@ void ImageGPU::padd_image() {
     cudaCheckError();
 }
 
+
+__global__
+void compute_blocks_device(int window_size, unsigned char* blocks_device,
+    unsigned char* padded_gray_data, int p_size, int nb_tiles_x, int padded_width,
+    int padded_height, int patch_size)
+{
+    int x = blockDim.x * blockIdx.x + threadIdx.x;
+    int y = blockDim.y * blockIdx.y + threadIdx.y;
+
+    if (x >= padded_width && y >= padded_height)
+      return;
+
+    int i = x + y * padded_width;
+
+    int new_index = (i % patch_size)
+      + p_size * ((i / patch_size) % nb_tiles_x)
+      + patch_size * ((i / (nb_tiles_x * patch_size)) % patch_size)
+      + p_size * nb_tiles_x * (i / (p_size * nb_tiles_x));
+
+    blocks_device[new_index] = padded_gray_data[i];
+}
+
 BlocksGPU ImageGPU::to_blocks(int window_size) const {
     int nb_blocks = padded_width / patch_size * padded_height / patch_size;
 
@@ -85,8 +107,9 @@ BlocksGPU ImageGPU::to_blocks(int window_size) const {
     cudaCheckError();
 
     int p_size = patch_size * patch_size;
+    int nb_tiles_x = padded_width / patch_size;
 
-    for (int i = 0; i < padded_height; ++i) {
+    /*for (int i = 0; i < padded_height; ++i) {
         for (int j = 0; j < padded_width; ++j) {
             int pos = i * padded_width + j;
             int nb_blocks_col = padded_width / patch_size;
@@ -98,6 +121,25 @@ BlocksGPU ImageGPU::to_blocks(int window_size) const {
             blocks_device[pos_b] = padded_gray_data[pos];
         }
     }
+
+    int p_size = patch_size * patch_size;//size of full patch
+    int nb_tiles_x = padded_width / patch_size;
+
+    for (int i = 0; i < padded_width * padded_height; ++i)
+    {
+      int new_index = (i % patch_size)
+	+ p_size * ((i / patch_size) % nb_tiles_x)
+	+ patch_size * ((i / (nb_tiles_x * patch_size)) % patch_size)
+	+ p_size * nb_tiles_x * (i / (p_size * nb_tiles_x));
+
+      blocks_device[new_index] = padded_gray_data[i];
+    }*/
+
+    dim3 threads_(patch_size, patch_size);
+    dim3 blocks_(padded_height / patch_size, padded_height / patch_size);
+    compute_blocks_device<<<blocks_, threads_>>>(window_size, blocks_device,
+	padded_gray_data, p_size, nb_tiles_x, padded_width, padded_height,
+	patch_size);
 
     return BlocksGPU(blocks_device, nb_blocks, patch_size, window_size);
 }
