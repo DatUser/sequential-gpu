@@ -84,7 +84,7 @@ void compute_blocks_device(int window_size, unsigned char* blocks_device,
     int x = blockDim.x * blockIdx.x + threadIdx.x;
     int y = blockDim.y * blockIdx.y + threadIdx.y;
 
-    if (x >= padded_width && y >= padded_height)
+    if (x >= padded_width || y >= padded_height)
       return;
 
     int i = x + y * padded_width;
@@ -136,7 +136,7 @@ BlocksGPU ImageGPU::to_blocks(int window_size) const {
     }*/
 
     dim3 threads_(patch_size, patch_size);
-    dim3 blocks_(padded_height / patch_size, padded_height / patch_size);
+    dim3 blocks_(padded_width / patch_size, padded_height / patch_size);
     compute_blocks_device<<<blocks_, threads_>>>(window_size, blocks_device,
 	padded_gray_data, p_size, nb_tiles_x, padded_width, padded_height,
 	patch_size);
