@@ -37,7 +37,7 @@ class Block {
         unsigned char* texton;
 
         // size (block_size * block_size)
-        std::vector<unsigned int> histogram;
+        std::vector<unsigned int> histogram; //TODO change to char
 };
 
 std::ostream& operator<<(std::ostream& os, const Block& block);

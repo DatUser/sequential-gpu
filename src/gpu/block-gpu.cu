@@ -48,3 +48,19 @@ void compute_pixel_texton_gpu(int i, int j, int k, unsigned char* textons,
     }
     textons[pos_t] = value;
 }
+
+__device__ 
+int get_value_texton(unsigned char* texton, int i) {
+    return texton[i];
+}
+
+
+__global__
+void compute_histogram_block_gpu(int* histogram, unsigned char* texton,
+    int size_histogram ) {
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+    if (i > size_histogram)
+        return;
+    int cellValue = get_value_texton(texton, i);
+    atomicAdd(&(histogram[cellValue]), 1);
+}

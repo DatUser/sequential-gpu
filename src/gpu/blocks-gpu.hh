@@ -13,16 +13,25 @@
 class BlocksGPU {
 public:
     BlocksGPU(Blocks blocks, int window_size);
+    BlocksGPU(unsigned char* blocks_device,
+              int nb_blocks, int block_size,
+              int window_size);
     ~BlocksGPU();
 
     // compute all the textons (each texton is computed on GPU)
     void compute_textons();
+    void compute_histogram_blocks();
+    int get_concatenated_histograms_size() {
+        return nb_blocks * block_size * block_size;
+    }
 
     // Data on the GPU
     // 3 dim tensor
     // shape=(nb_blocks, block_size, block_size)
     unsigned char* textons_device;
     unsigned char* blocks_device;
+    // shape = (nb_blocks, block_size * block_size), it contains number up to 255
+    int* histogram;
 
     // number of blocks in our image
     int nb_blocks;

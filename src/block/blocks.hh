@@ -13,7 +13,10 @@ class Blocks {
 
         void compute_textons_blocks();
         void compute_histogram_blocks();
-        std::vector<unsigned char> get_concatenated_histograms();
+        std::vector<int> get_concatenated_histograms();
+        int get_concatenated_histograms_size() {
+            return nb_rows * nb_cols * block_size * block_size;
+        }
 
         /* Getters */
         std::vector<Block*> get_blocks() const { return blocks; }

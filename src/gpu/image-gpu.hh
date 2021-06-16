@@ -1,5 +1,7 @@
 #pragma once
 
+#include "blocks-gpu.hh"
+
 #define cudaCheckError() {                                                                       \
     cudaError_t e=cudaGetLastError();                                                        \
     if(e!=cudaSuccess) {                                                                     \
@@ -17,6 +19,7 @@ public:
     void padd_image();
     void save_gray_ppm(const char* path) const;
     void save_padded_gray_ppm(const char* path) const;
+    BlocksGPU to_blocks(int window_size) const;
 
     /* getters */
     unsigned char* get_gray_data() const { return gray_data; }
