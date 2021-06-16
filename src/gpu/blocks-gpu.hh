@@ -17,12 +17,15 @@ public:
 
     // compute all the textons (each texton is computed on GPU)
     void compute_textons();
+    void compute_histogram_blocks();
 
     // Data on the GPU
     // 3 dim tensor
     // shape=(nb_blocks, block_size, block_size)
     unsigned char* textons_device;
     unsigned char* blocks_device;
+    // shape = (nb_blocks, block_size * block_size), it contains number up to 255
+    int* histogram;
 
     // number of blocks in our image
     int nb_blocks;
