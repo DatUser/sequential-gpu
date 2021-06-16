@@ -1,0 +1,34 @@
+Gray and padding
+GPU excution time:
+0.461724ms
+
+CPU execution time:
+5.72457ms
+
+--------------
+Gray Img test: true
+Padded Gray Img test: true
+To blocks
+GPU excution time:
+3.6263ms
+
+CPU execution time:
+2.71353ms
+
+16
+Texton
+GPU excution time:
+0.799832ms
+
+CPU execution time:
+26.2621ms
+
+Histogram
+GPU excution time:
+27.6905ms
+
+CPU execution time:
+9.35951ms
+
+--------------
+Concatenate test: true

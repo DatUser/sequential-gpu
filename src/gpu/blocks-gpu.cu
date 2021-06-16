@@ -29,6 +29,26 @@ BlocksGPU::BlocksGPU(Blocks blocks, int w_size) {
     }
 }
 
+BlocksGPU::BlocksGPU(unsigned char* blocks_device,
+                     int nb_blocks, int block_size,
+                     int window_size) {
+    int size = block_size * block_size;
+    this->window_size = window_size;
+    this->nb_blocks = nb_blocks;
+    this->block_size = block_size;
+    this->blocks_device = blocks_device;
+
+    cudaMallocManaged(&textons_device, sizeof(unsigned char) * nb_blocks * size);
+    cudaCheckError();
+
+    //cudaMalloc(&blocks_device, sizeof(unsigned char) * nb_blocks * size);
+    //cudaCheckError();
+
+    cudaMallocManaged(&histogram, sizeof(int) * nb_blocks * size);
+    cudaCheckError();
+}
+
+
 BlocksGPU::~BlocksGPU() {
     cudaFree(textons_device);
     cudaFree(blocks_device);
@@ -37,6 +57,7 @@ BlocksGPU::~BlocksGPU() {
 
 void BlocksGPU::compute_textons() {
     int nb_blocks_cuda_x = 4;
+    std::cout << block_size << '\n';
     dim3 threads_(nb_blocks_cuda_x, block_size, block_size);
     dim3 blocks_((nb_blocks + nb_blocks_cuda_x) / nb_blocks_cuda_x, 1, 1);
 

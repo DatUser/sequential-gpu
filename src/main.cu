@@ -12,11 +12,13 @@
 #include "timer.hh"
 
 int main() {
-    // LBP algorithm
-
-    // Load img
-    // GPU
+    // Load imgs 
     ImageGPU img_gpu("data/test.jpg");
+    Image img_cpu("data/test.jpg");
+
+    // GPU vs CPU (to__gray + padd_image)
+
+    // GPU
     auto start_gray_padd_gpu = start_timer();
     img_gpu.to_gray();
     img_gpu.padd_image();
@@ -26,7 +28,6 @@ int main() {
 
     // CPU
     int patch_size = 16;
-    Image img_cpu("data/test.jpg");
     auto start_gray_padd_cpu = start_timer();
     img_cpu.set_patch_size(patch_size);
     auto other_img = img_cpu.to_gray();
@@ -44,15 +45,23 @@ int main() {
     std::cout << "Gray Img test: " << std::boolalpha << are_eq1 << '\n';
     std::cout << "Padded Gray Img test: " << std::boolalpha << are_eq2 << '\n';
 
-
     // Step 1: Compute blocks / tiling
+    // CPU
     int window_size = 3;
+    auto start_to_blocks_cpu = start_timer();
     Blocks blocks = padded_img2.to_blocks(window_size);
+    auto duration_to_blocks_cpu = duration(start_to_blocks_cpu);
+
+    // GPU
+    auto start_to_blocks_gpu = start_timer();
+    BlocksGPU blocks_gpu = img_gpu.to_blocks(window_size);
+    auto duration_to_blocks_gpu = duration(start_to_blocks_gpu);
+
+    display_times(duration_to_blocks_cpu, duration_to_blocks_gpu, "To blocks");
 
     // Step 2: Compute textons
     // GPU
-    //std::cout << "GPU version\n\n";
-    BlocksGPU blocks_gpu(blocks, window_size);
+    //BlocksGPU blocks_gpu(blocks, window_size);
     auto start_texton_gpu = start_timer();
     blocks_gpu.compute_textons();
     auto duration_texton_gpu = duration(start_texton_gpu); 
@@ -61,12 +70,7 @@ int main() {
     blocks_gpu.compute_histogram_blocks();
     auto duration_histo_gpu = duration(start_histo_gpu); 
 
-
-    /*for (int i = 0; i < 8; i++)
-      std::cout << (int) blocks_gpu.textons_device[i] << std::endl;*/
-
     // CPU
-    //std::cout << "CPU version\n\n";
     auto start_texton_cpu = start_timer();
     blocks.compute_textons_blocks();
     auto duration_texton_cpu = duration(start_texton_cpu); 

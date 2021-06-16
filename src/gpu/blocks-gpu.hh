@@ -13,6 +13,9 @@
 class BlocksGPU {
 public:
     BlocksGPU(Blocks blocks, int window_size);
+    BlocksGPU(unsigned char* blocks_device,
+              int nb_blocks, int block_size,
+              int window_size);
     ~BlocksGPU();
 
     // compute all the textons (each texton is computed on GPU)

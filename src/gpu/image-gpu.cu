@@ -75,6 +75,33 @@ void ImageGPU::padd_image() {
     cudaCheckError();
 }
 
+BlocksGPU ImageGPU::to_blocks(int window_size) const {
+    int nb_blocks = padded_width / patch_size * padded_height / patch_size;
+
+    // allocation of blocks_device
+    unsigned char* blocks_device;
+    int size = nb_blocks * patch_size * patch_size;
+    cudaMallocManaged(&blocks_device, sizeof(unsigned char) * size);
+    cudaCheckError();
+
+    int p_size = patch_size * patch_size;
+
+    for (int i = 0; i < padded_height; ++i) {
+        for (int j = 0; j < padded_width; ++j) {
+            int pos = i * padded_width + j;
+            int nb_blocks_col = padded_width / patch_size;
+
+            int i_patch = i / patch_size; // row
+            int j_patch = j / patch_size; // col
+
+            int pos_b = i_patch * nb_blocks_col * p_size + j_patch * p_size + (i % patch_size) * patch_size + (j % patch_size);
+            blocks_device[pos_b] = padded_gray_data[pos];
+        }
+    }
+
+    return BlocksGPU(blocks_device, nb_blocks, patch_size, window_size);
+}
+
 void ImageGPU::save_gray_ppm(const char* path) const {
     std::ofstream ofs(path, std::ios_base::out | std::ios_base::binary);
     ofs << "P6" << std::endl << width << ' ' << height << std::endl << "255" << std::endl;
