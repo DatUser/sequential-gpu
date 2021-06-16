@@ -53,10 +53,13 @@ int main() {
     // GPU
     //std::cout << "GPU version\n\n";
     BlocksGPU blocks_gpu(blocks, window_size);
-    auto start_texton_histo_gpu = start_timer();
+    auto start_texton_gpu = start_timer();
     blocks_gpu.compute_textons();
+    auto duration_texton_gpu = duration(start_texton_gpu); 
+
+    auto start_histo_gpu = start_timer();
     blocks_gpu.compute_histogram_blocks();
-    auto duration_texton_histo_gpu = duration(start_texton_histo_gpu); 
+    auto duration_histo_gpu = duration(start_histo_gpu); 
 
 
     /*for (int i = 0; i < 8; i++)
@@ -64,19 +67,23 @@ int main() {
 
     // CPU
     //std::cout << "CPU version\n\n";
-    auto start_texton_histo_cpu = start_timer();
+    auto start_texton_cpu = start_timer();
     blocks.compute_textons_blocks();
-    auto duration_texton_histo_cpu = duration(start_texton_histo_cpu); 
+    auto duration_texton_cpu = duration(start_texton_cpu); 
 
-    display_times(duration_texton_histo_cpu, duration_texton_histo_gpu, "Texton and Histo");
+    display_times(duration_texton_cpu, duration_texton_gpu, "Texton");
 
     // Step 3: Compute histogram
+    auto start_histo_cpu = start_timer();
     blocks.compute_histogram_blocks();
-
 
 
     // Step 4: Concatenate histograms
     std::vector<int> hist = blocks.get_concatenated_histograms();
+
+    auto duration_histo_cpu = duration(start_histo_cpu); 
+    display_times(duration_histo_cpu, duration_histo_gpu, "Histogram");
+
     save_csv("data/histogram.csv", ",", hist, patch_size * patch_size);
 
     bool are_histo_eq = are_array_equal<int *>(blocks.get_concatenated_histograms().data(), blocks_gpu.histogram,
