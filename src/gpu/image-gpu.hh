@@ -24,7 +24,8 @@ public:
     /* getters */
     unsigned char* get_gray_data() const { return gray_data; }
     unsigned char* get_padded_gray_data() const { return padded_gray_data; }
-    int get_size() const { return width * height; }
+  void set_padded_gray_data(unsigned char* padded_gray_data) { this->padded_gray_data = padded_gray_data; }
+  int get_size() const { return width * height; }
     int get_padded_size() const { return padded_width * padded_height; }
     int get_patch_size() const { return patch_size; }
     int get_nb_blocks_x() const { return padded_width / patch_size; }
@@ -54,3 +55,8 @@ private:
     // how to divide the image
     int patch_size;
 };
+
+__global__
+void compute_blocks_device(int window_size, unsigned char* blocks_device,
+                           unsigned char* padded_gray_data, int p_size, int nb_tiles_x, int padded_width,
+                           int padded_height, int patch_size);

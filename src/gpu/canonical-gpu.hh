@@ -1,5 +1,6 @@
 #pragma once
 
+#include "image-gpu.hh"
 #define cudaCheckError() {                                                                       \
     cudaError_t e=cudaGetLastError();                                                        \
     if(e!=cudaSuccess) {                                                                     \
@@ -10,14 +11,13 @@
 
 class CanonicalGPU {
 public:
-    CanonicalGPU(ImageGPU image);
-    ~CanonicalGPU();
+  CanonicalGPU(const ImageGPU& image, int window_size);
+  ~CanonicalGPU();
 
     // compute all the textons (each texton is computed on GPU)
     void compute_textons();
-    void compute_histogram_blocks();
     void compute_shared_histogram_blocks();
-    int get_concatenated_histograms_size() {
+    int get_concatenated_histograms_size() const {
         return nb_blocks * block_size * block_size;
     }
 

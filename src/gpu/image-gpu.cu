@@ -26,6 +26,8 @@ ImageGPU::ImageGPU(const char* path) {
     // compute padded width / height
     padded_width = width + patch_size - width % patch_size;
     padded_height =  height + patch_size - height % patch_size;
+    std::cout << "width : " << padded_width << " height : " << padded_height
+      << " total : " << padded_width * padded_height << " size : " << size << '\n';
 
     // make allocations
     cudaMallocManaged(&data, sizeof(unsigned char) * size);
