@@ -39,11 +39,11 @@ int main() {
 
     // TESTS
 
-    bool are_eq1 = are_array_equal<unsigned char *>(other_img.get_data(), img_gpu.get_gray_data(), other_img.get_size(), img_gpu.get_size());
+    /*bool are_eq1 = are_array_equal<unsigned char *>(other_img.get_data(), img_gpu.get_gray_data(), other_img.get_size(), img_gpu.get_size());
     bool are_eq2 = are_array_equal<unsigned char *>(padded_img2.get_data(), img_gpu.get_padded_gray_data(), padded_img2.get_size(), img_gpu.get_padded_size());
     std::cout << "--------------\n";
     std::cout << "Gray Img test: " << std::boolalpha << are_eq1 << '\n';
-    std::cout << "Padded Gray Img test: " << std::boolalpha << are_eq2 << '\n';
+    std::cout << "Padded Gray Img test: " << std::boolalpha << are_eq2 << '\n';*/
 
     // Step 1: Compute blocks / tiling
     // CPU
@@ -67,7 +67,8 @@ int main() {
     auto duration_texton_gpu = duration(start_texton_gpu); 
 
     auto start_histo_gpu = start_timer();
-    blocks_gpu.compute_histogram_blocks();
+    //blocks_gpu.compute_histogram_blocks();
+    blocks_gpu.compute_shared_histogram_blocks();
     auto duration_histo_gpu = duration(start_histo_gpu); 
 
     // CPU

@@ -13,3 +13,7 @@ void compute_pixel_texton_gpu(int i, int j, int k, unsigned char* texton,
 __global__
 void compute_histogram_block_gpu(int* histogram, unsigned char* texton,
     int size_histogram, int nb_blocks);
+
+__global__
+void compute_shared_histogram_block_gpu(int* histogram, unsigned char* texton,
+    int size_histogram, int nb_blocks);

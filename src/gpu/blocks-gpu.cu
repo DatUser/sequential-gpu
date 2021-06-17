@@ -38,13 +38,16 @@ BlocksGPU::BlocksGPU(unsigned char* blocks_device,
     this->block_size = block_size;
     this->blocks_device = blocks_device;
 
-    cudaMallocManaged(&textons_device, sizeof(unsigned char) * nb_blocks * size);
+    cudaMalloc(&textons_device, sizeof(unsigned char) * nb_blocks * size);
     cudaCheckError();
 
     //cudaMalloc(&blocks_device, sizeof(unsigned char) * nb_blocks * size);
     //cudaCheckError();
 
     cudaMallocManaged(&histogram, sizeof(int) * nb_blocks * size);
+    cudaCheckError();
+
+    cudaMemset(histogram, 0, sizeof(int) * nb_blocks * size);
     cudaCheckError();
 }
 
@@ -57,7 +60,7 @@ BlocksGPU::~BlocksGPU() {
 
 void BlocksGPU::compute_textons() {
     int nb_blocks_cuda_x = 4;
-    std::cout << block_size << '\n';
+    //std::cout << block_size << '\n';
     dim3 threads_(nb_blocks_cuda_x, block_size, block_size);
     dim3 blocks_((nb_blocks + nb_blocks_cuda_x) / nb_blocks_cuda_x, 1, 1);
 
@@ -75,15 +78,27 @@ void BlocksGPU::compute_textons() {
 void BlocksGPU::compute_histogram_blocks() {
     int size = block_size * block_size;
     //for (int i = 0; i < nb_blocks; ++i) {
-        dim3 threads_(size);
-        dim3 blocks_(nb_blocks);
+    dim3 threads_(size);
+    dim3 blocks_(nb_blocks);
 
-        compute_histogram_block_gpu<<<blocks_, threads_>>>(histogram /*+ i * size*/
-	    , textons_device /*+ i * size*/, size, nb_blocks);
+    compute_histogram_block_gpu<<<blocks_, threads_>>>(histogram /*+ i * size*/
+    , textons_device /*+ i * size*/, size, nb_blocks);
 
-        cudaCheckError();
-        cudaDeviceSynchronize();
-        cudaCheckError();
+    cudaCheckError();
+    cudaDeviceSynchronize();
+    cudaCheckError();
     //}
 
+}
+
+void BlocksGPU::compute_shared_histogram_blocks() {
+    int size = block_size * block_size;
+    dim3 threads_(size);
+    dim3 blocks_(nb_blocks);
+
+    compute_shared_histogram_block_gpu<<<blocks_, threads_, size * sizeof(int)>>>(histogram, textons_device, size, nb_blocks);
+
+    cudaCheckError();
+    cudaDeviceSynchronize();
+    cudaCheckError();
 }

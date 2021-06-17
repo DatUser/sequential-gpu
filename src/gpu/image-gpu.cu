@@ -103,7 +103,7 @@ BlocksGPU ImageGPU::to_blocks(int window_size) const {
     // allocation of blocks_device
     unsigned char* blocks_device;
     int size = nb_blocks * patch_size * patch_size;
-    cudaMallocManaged(&blocks_device, sizeof(unsigned char) * size);
+    cudaMalloc(&blocks_device, sizeof(unsigned char) * size);
     cudaCheckError();
 
     int p_size = patch_size * patch_size;

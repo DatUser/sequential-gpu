@@ -54,7 +54,6 @@ int get_value_texton(unsigned char* texton, int i) {
     return texton[i];
 }
 
-
 __global__
 void compute_histogram_block_gpu(int* histogram, unsigned char* texton,
     int size_histogram, int nb_blocks) {
@@ -63,4 +62,22 @@ void compute_histogram_block_gpu(int* histogram, unsigned char* texton,
         return;
     int cellValue = get_value_texton(texton + blockIdx.x * size_histogram, i);
     atomicAdd(&(histogram[cellValue + blockIdx.x * size_histogram]), 1);
+}
+
+__global__
+void compute_shared_histogram_block_gpu(int* histogram, unsigned char* texton,
+    int size_histogram, int nb_blocks) {
+    extern __shared__ int local_histogram[];
+
+    int i = threadIdx.x;
+    if (i >= size_histogram)
+        return;
+    local_histogram[i] = 0;
+    __syncthreads();
+
+    int cellValue = get_value_texton(texton + blockIdx.x * size_histogram, i);
+    atomicAdd(&(local_histogram[cellValue]), 1);
+    __syncthreads();
+
+    atomicAdd(&(histogram[i + blockIdx.x * size_histogram]), local_histogram[i]);
 }
