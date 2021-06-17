@@ -1,0 +1,16 @@
+==13680== Profiling application: build/lbp
+==13680== Profiling result:
+==13680== Metric result:
+Invocations                               Metric Name                        Metric Description         Min         Max         Avg
+Device "GeForce 940MX (0)"
+    Kernel: compute_histogram_block_gpu(int*, unsigned char*, int, int)
+          1                        achieved_occupancy                        Achieved Occupancy    0.823657    0.823657    0.823657
+    Kernel: compute_texton_block_gpu(unsigned char*, unsigned char*, int, int, int)
+          1                        achieved_occupancy                        Achieved Occupancy    0.874160    0.874160    0.874160
+    Kernel: compute_blocks_device(int, unsigned char*, unsigned char*, int, int, int, int, int)
+          1                        achieved_occupancy                        Achieved Occupancy    0.920967    0.920967    0.920967
+    Kernel: to_gray_gpu(unsigned char*, unsigned char*, int, int, int)
+          1                        achieved_occupancy                        Achieved Occupancy    0.860995    0.860995    0.860995
+    Kernel: padd_image_gpu(unsigned char*, unsigned char*, int, int, int, int)
+          1                        achieved_occupancy                        Achieved Occupancy    0.826982    0.826982    0.826982
+
