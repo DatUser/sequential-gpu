@@ -26,6 +26,9 @@ public:
     unsigned char* get_padded_gray_data() const { return padded_gray_data; }
     int get_size() const { return width * height; }
     int get_padded_size() const { return padded_width * padded_height; }
+    int get_patch_size() const { return patch_size; }
+    int get_nb_blocks_x() const { return padded_width / patch_size; }
+    int get_nb_blocks_y() const { return padded_height / patch_size; }
 
 private:
     // gpu image data
