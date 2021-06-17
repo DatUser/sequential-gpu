@@ -1,0 +1,29 @@
+==11887== Profiling application: build/lbp
+==11887== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   57.48%  1.7590ms       884  1.9890us  1.3760us  5.8880us  compute_histogram_block_gpu(int*, unsigned char*, int)
+                   16.09%  492.29us         1  492.29us  492.29us  492.29us  compute_texton_block_gpu(unsigned char*, unsigned char*, int, int, int)
+                   12.67%  387.75us         1  387.75us  387.75us  387.75us  [CUDA memcpy HtoD]
+                    6.20%  189.67us         1  189.67us  189.67us  189.67us  to_gray_gpu(unsigned char*, unsigned char*, int, int, int)
+                    3.82%  116.93us         1  116.93us  116.93us  116.93us  padd_image_gpu(unsigned char*, unsigned char*, int, int, int, int)
+                    3.75%  114.79us         1  114.79us  114.79us  114.79us  compute_blocks_device(int, unsigned char*, unsigned char*, int, int, int, int, int)
+      API calls:   76.59%  127.48ms         6  21.246ms  9.5900us  126.75ms  cudaMallocManaged
+                   12.45%  20.719ms       888  23.332us  15.374us  152.28us  cudaLaunchKernel
+                    9.60%  15.977ms       887  18.011us  6.8160us  1.4902ms  cudaDeviceSynchronize
+                    0.63%  1.0519ms         1  1.0519ms  1.0519ms  1.0519ms  cudaMemcpy
+                    0.31%  511.40us        97  5.2720us     142ns  236.06us  cuDeviceGetAttribute
+                    0.16%  260.68us         6  43.445us  10.743us  94.230us  cudaFree
+                    0.15%  246.79us      1781     138ns      96ns     895ns  cudaGetLastError
+                    0.06%  102.02us         1  102.02us  102.02us  102.02us  cuDeviceTotalMem
+                    0.04%  69.404us         1  69.404us  69.404us  69.404us  cuDeviceGetName
+                    0.01%  14.865us         1  14.865us  14.865us  14.865us  cuDeviceGetPCIBusId
+                    0.00%  2.3750us         3     791ns     191ns  1.5440us  cuDeviceGetCount
+                    0.00%  1.2850us         2     642ns     236ns  1.0490us  cuDeviceGet
+                    0.00%     242ns         1     242ns     242ns     242ns  cuDeviceGetUuid
+
+==11887== Unified Memory profiling result:
+Device "GeForce 940MX (0)"
+   Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+      25  61.440KB  4.0000KB  508.00KB  1.500000MB  860.3840us  Device To Host
+Total CPU Page faults: 12
+
