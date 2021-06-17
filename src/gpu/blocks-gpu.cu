@@ -74,15 +74,16 @@ void BlocksGPU::compute_textons() {
 
 void BlocksGPU::compute_histogram_blocks() {
     int size = block_size * block_size;
-    for (int i = 0; i < nb_blocks; ++i) {
+    //for (int i = 0; i < nb_blocks; ++i) {
         dim3 threads_(size);
-        dim3 blocks_(1);
+        dim3 blocks_(nb_blocks);
 
-        compute_histogram_block_gpu<<<blocks_, threads_>>>(histogram + i * size, textons_device + i * size, size);
+        compute_histogram_block_gpu<<<blocks_, threads_>>>(histogram /*+ i * size*/
+	    , textons_device /*+ i * size*/, size, nb_blocks);
 
         cudaCheckError();
         cudaDeviceSynchronize();
         cudaCheckError();
-    }
+    //}
 
 }
