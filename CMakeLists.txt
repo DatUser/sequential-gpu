@@ -10,6 +10,7 @@ set(
     src/gpu/block-gpu.cu
     src/gpu/blocks-gpu.cu
     src/gpu/image-gpu.cu
+    src/kmeans/kmeans-gpu.cu
 )
 
 include_directories(
@@ -17,6 +18,7 @@ include_directories(
     src/image
     src/block
     src/gpu
+    src/kmeans
 )
 
 cmake_minimum_required(VERSION 3.12)

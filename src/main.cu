@@ -100,5 +100,8 @@ int main() {
     Block* data = blocks_data[0];
     //std::cout << *data << '\n';
 
+
+    // Launch KMeans
+
     return 0;
 }

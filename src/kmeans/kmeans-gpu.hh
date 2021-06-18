@@ -19,7 +19,7 @@ class KMeansGPU {
                   std::string type);
         ~KMeansGPU();
 
-        void fit(int* data);
+        void fit(float* data);
 
         int nb_features;
         int nb_clusters;
@@ -29,9 +29,14 @@ class KMeansGPU {
 
         // clusters data
         // shape=(nb_clusters, nb_features)
-        int* clusters;
+        float* clusters;
 
         // Each samples is associated to a cluster
         // shape=(nb_samples, )
         int* data_clusters;
+
+    private:
+        void forgy_cluster_init(float* data, int cluster_ID);
+        void forgy_clusters_init(float* data);
+        void compute_clusters_mean(float* data);
 };
