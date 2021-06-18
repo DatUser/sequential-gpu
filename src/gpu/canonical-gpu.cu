@@ -52,12 +52,12 @@ __global__ void compute_texton_block_canonical_gpu(unsigned char* textons, unsig
     int idx = 0;
     for (int i = -window_radius; i <= window_radius; ++i) {
         int x_i = x + i;
-        if (x_i < 0 || x_i >= block_size) {
-            ++idx;
-            continue;
-        }
         for (int j = -window_radius; j <= window_radius; ++j) {
-            int y_j = y + j;
+            if (x_i < 0 || x_i >= block_size) {
+              ++idx;
+              continue;
+            }
+              int y_j = y + j;
             if (y_j < 0 || y_j >= block_size) {
                 ++idx;
                 continue;
@@ -65,7 +65,7 @@ __global__ void compute_texton_block_canonical_gpu(unsigned char* textons, unsig
             if (i == 0 && j == 0)
                 continue;
             if (central_pixel >= get_padded_gray_data_value(padded_gray_data, x_i, y_j, nb_blocks_x))
-                value |= 1 << (8 - idx);
+                value |= 1 << idx;
             ++idx;
         }
     }

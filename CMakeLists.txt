@@ -10,6 +10,7 @@ set(
     src/gpu/block-gpu.cu
     src/gpu/blocks-gpu.cu
     src/gpu/image-gpu.cu
+    src/gpu/canonical-gpu.cu
 )
 
 include_directories(

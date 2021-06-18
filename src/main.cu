@@ -115,12 +115,11 @@ void test(int window_size, bool histogram_shared = false) {
   img_gpu_canonical.padd_image();
   CanonicalGPU canonical_gpu(img_gpu_canonical, window_size);
   canonical_gpu.compute_textons();
+  canonical_gpu.compute_shared_histogram_blocks();
 
-  ImageGPU img_test("data/test.jpg");
-  img_test.set_padded_gray_data(canonical_gpu.textons_device);
-  BlocksGPU blocks_gpu_test = img_test.to_blocks(window_size);
-
-  //canonical_gpu.compute_shared_histogram_blocks();
+  //ImageGPU img_test("data/test.jpg");
+  //img_test.set_padded_gray_data(canonical_gpu.textons_device);
+  //BlocksGPU blocks_gpu_test = img_test.to_blocks(window_size);
 
   //BLOCKS
   ImageGPU img_gpu("data/test.jpg");
@@ -129,10 +128,13 @@ void test(int window_size, bool histogram_shared = false) {
   BlocksGPU blocks_gpu = img_gpu.to_blocks(window_size);
   blocks_gpu.compute_textons();
 
-  bool are_histo_eq_canonical_test = are_array_equal<unsigned char *>(blocks_gpu.textons_device, blocks_gpu_test.blocks_device,
-                                                       blocks_gpu.get_concatenated_histograms_size(), canonical_gpu.get_concatenated_histograms_size());
-  std::cout << "--------------\n";
-  std::cout << "Canonical : Concatenate test: " << std::boolalpha << are_histo_eq_canonical_test << '\n';
+
+  //std::cout << blocks_gpu.get_concatenated_histograms_size() << " " <<  canonical_gpu.get_concatenated_histograms_size() << "\n";
+
+  //bool are_histo_eq_canonical_test = are_array_equal<unsigned char *>(blocks_gpu.textons_device, blocks_gpu_test.blocks_device,
+  //                                                     blocks_gpu.get_concatenated_histograms_size(), blocks_gpu_test.get_concatenated_histograms_size());
+  //std::cout << "--------------\n";
+  //std::cout << "Canonical : Concatenate test: " << std::boolalpha << are_histo_eq_canonical_test << '\n';
 
 
   if (histogram_shared)
@@ -158,7 +160,7 @@ void test(int window_size, bool histogram_shared = false) {
   bool are_histo_eq_canonical = are_array_equal<int *>(blocks.get_concatenated_histograms().data(), canonical_gpu.histogram,
                                              blocks.get_concatenated_histograms_size(), canonical_gpu.get_concatenated_histograms_size());
   std::cout << "--------------\n";
-  std::cout << "Canonical : Concatenate test: " << std::boolalpha << are_histo_eq_canonical << '\n';
+ std::cout << "Canonical : Concatenate test: " << std::boolalpha << are_histo_eq_canonical << '\n';
 
   bool are_histo_eq = are_array_equal<int *>(blocks.get_concatenated_histograms().data(), blocks_gpu.histogram,
                                              blocks.get_concatenated_histograms_size(), blocks_gpu.get_concatenated_histograms_size());
