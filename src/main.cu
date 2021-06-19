@@ -115,11 +115,12 @@ void test(int window_size, bool histogram_shared = false) {
   img_gpu_canonical.padd_image();
   CanonicalGPU canonical_gpu(img_gpu_canonical, window_size);
   canonical_gpu.compute_textons();
+
   canonical_gpu.compute_shared_histogram_blocks();
 
-  //ImageGPU img_test("data/test.jpg");
-  //img_test.set_padded_gray_data(canonical_gpu.textons_device);
-  //BlocksGPU blocks_gpu_test = img_test.to_blocks(window_size);
+  ImageGPU img_test("data/test.jpg");
+  img_test.set_padded_gray_data(canonical_gpu.textons_device);
+  BlocksGPU blocks_gpu_test = img_test.to_blocks(window_size);
 
   //BLOCKS
   ImageGPU img_gpu("data/test.jpg");
@@ -128,20 +129,24 @@ void test(int window_size, bool histogram_shared = false) {
   BlocksGPU blocks_gpu = img_gpu.to_blocks(window_size);
   blocks_gpu.compute_textons();
 
+  std::cout << blocks_gpu.get_concatenated_histograms_size() << " " <<  blocks_gpu_test.get_concatenated_histograms_size() << "\n";
+  std::cout << blocks_gpu.textons_device[0];
+  std::cout << "Accessed blocks  texton first element" << std::endl;
+  std::cout << blocks_gpu_test.blocks_device[0];
+  std::cout << "Accessed canonical texton first element" << std::endl;
 
-  //std::cout << blocks_gpu.get_concatenated_histograms_size() << " " <<  canonical_gpu.get_concatenated_histograms_size() << "\n";
 
-  //bool are_histo_eq_canonical_test = are_array_equal<unsigned char *>(blocks_gpu.textons_device, blocks_gpu_test.blocks_device,
-  //                                                     blocks_gpu.get_concatenated_histograms_size(), blocks_gpu_test.get_concatenated_histograms_size());
-  //std::cout << "--------------\n";
-  //std::cout << "Canonical : Concatenate test: " << std::boolalpha << are_histo_eq_canonical_test << '\n';
+
+  bool are_texton_eq = are_array_equal<unsigned char *>(blocks_gpu.textons_device, blocks_gpu_test.blocks_device,
+                                                       blocks_gpu.get_concatenated_histograms_size(), blocks_gpu_test.get_concatenated_histograms_size());
+  std::cout << "--------------\n";
+  std::cout << "Canonical : Texton test: " << std::boolalpha << are_texton_eq << '\n';
 
 
   if (histogram_shared)
     blocks_gpu.compute_histogram_blocks();
   else
     blocks_gpu.compute_histogram_blocks();
-
   //CPU
   Image img_cpu("data/test.jpg");
   int patch_size = 16;
@@ -152,9 +157,14 @@ void test(int window_size, bool histogram_shared = false) {
   Blocks blocks = padded_img2.to_blocks(window_size);
   blocks.compute_textons_blocks();
   blocks.compute_histogram_blocks();
+    
+  std::vector<int> canonical_gpu_histogram_vector(canonical_gpu.histogram, canonical_gpu.histogram + canonical_gpu.get_concatenated_histograms_size());
+  save_csv("data/gpu_canonical_histogram.csv", ",", canonical_gpu_histogram_vector, 256);
+
+  std::vector<int> blocks_gpu_histogram_vector(blocks_gpu.histogram, blocks_gpu.histogram + blocks_gpu.get_concatenated_histograms_size());
+  save_csv("data/gpu_blocks_histogram.csv", ",", blocks_gpu_histogram_vector, 256);
 
   std::vector<int> hist = blocks.get_concatenated_histograms();
-
   save_csv("data/histogram.csv", ",", hist, patch_size * patch_size);
 
   bool are_histo_eq_canonical = are_array_equal<int *>(blocks.get_concatenated_histograms().data(), canonical_gpu.histogram,

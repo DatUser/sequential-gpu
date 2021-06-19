@@ -33,7 +33,7 @@ __device__
 unsigned int get_image_index(unsigned int x, unsigned int y, int nb_blocks_x) {
     // return x_offset + y_offset + x_block_offset + y_block_offset;
   return x + y * (blockDim.x * nb_blocks_x) + blockIdx.x * blockDim.x + blockIdx.y * blockDim.y * (blockDim.x * nb_blocks_x);
-  return x + y * (blockDim.x * nb_blocks_x) + blockIdx.x * blockDim.x + blockIdx.y * (blockDim.x * nb_blocks_x);
+  //return x + y * (blockDim.x * nb_blocks_x) + blockIdx.x * blockDim.x + blockIdx.y * (blockDim.x * nb_blocks_x);
 }
 
 __device__ 
@@ -72,7 +72,7 @@ __global__ void compute_texton_block_canonical_gpu(unsigned char* textons, unsig
 //    printf("value : %d\n", value);
     unsigned image_index = get_image_index(x, y, nb_blocks_x);
     if (blockIdx.x == 0 && blockIdx.y == 0) {
-      printf("threadIdx.x : %d, threadIdx.y :  %d, blockIdx.x :  %d, blockIdx.y :  %d, image_index : %d\n", threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y, image_index);
+      //printf("threadIdx.x : %d, threadIdx.y :  %d, blockIdx.x :  %d, blockIdx.y :  %d, image_index : %d\n", threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y, image_index);
     }
   textons[get_image_index(x, y, nb_blocks_x)] = value;
 }
@@ -105,6 +105,7 @@ void compute_shared_histogram_block_gpu_canonical(int* histogram, unsigned char*
   unsigned int i = threadIdx.x;
   unsigned int j = threadIdx.y;
   unsigned int index_1D = i + j * blockDim.x;
+  unsigned int offset_local_histogram = i + j * nb_blocks_x * blockDim.x;
   if (index_1D >= size_histogram)
     return;
   local_histogram[index_1D] = 0;
@@ -113,7 +114,7 @@ void compute_shared_histogram_block_gpu_canonical(int* histogram, unsigned char*
   unsigned int offset_x = blockDim.x * blockIdx.x;
   unsigned int offset_y = blockDim.y * blockIdx.y;
   unsigned int offset_total = offset_x + offset_y * nb_blocks_x * blockDim.x;
-  unsigned char cellValue = get_value_texton_canonical(texton + offset_total, index_1D);
+  unsigned char cellValue = get_value_texton_canonical(texton + offset_total, offset_local_histogram);
   atomicAdd(&(local_histogram[cellValue]), 1);
   __syncthreads();
 

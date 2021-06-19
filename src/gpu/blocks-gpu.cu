@@ -38,7 +38,7 @@ BlocksGPU::BlocksGPU(unsigned char* blocks_device,
     this->block_size = block_size;
     this->blocks_device = blocks_device;
 
-    cudaMalloc(&textons_device, sizeof(unsigned char) * nb_blocks * size);
+    cudaMallocManaged(&textons_device, sizeof(unsigned char) * nb_blocks * size); //TODO Added managed to debug
     cudaCheckError();
 
     //cudaMalloc(&blocks_device, sizeof(unsigned char) * nb_blocks * size);
