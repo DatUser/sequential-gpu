@@ -172,16 +172,43 @@ std::cout << "--------------\n";
 std::cout << "Gray Img test: " << std::boolalpha << are_eq1 << '\n';
 std::cout << "Padded Gray Img test: " << std::boolalpha << are_eq2 << '\n';*/
 
-int main() {
+int main(int argc, char **argv) {
   std::vector<std::string> categories = {"Gray", "Pad", "To Blocks", "Texton", "Histo"};
   int window_size = 3;
   test(window_size);
-  auto durations_canonical = gpu_canonical(window_size);
-  auto durations_blocks = gpu_blocks(window_size, false);
-  auto duration_cpu = cpu_implementation(window_size);
-  display_times(duration_cpu, categories, "CPU");
-  display_times(durations_blocks, categories, "GPU BLOCKS");
-  display_times(durations_canonical, categories, "GPU CANONICAL");
+  
+  if (argc == 2)
+  {
+    //switch (argv[1])
+    if (!strcmp(argv[1], "cpu"))
+    {
+      auto duration_cpu = cpu_implementation(window_size);
+      display_times(duration_cpu, categories, "CPU");
+    }
+    else if (!strcmp(argv[1], "canonical"))
+    {
+      auto durations_canonical = gpu_canonical(window_size);
+      display_times(durations_canonical, categories, "GPU CANONICAL");
+    }
+    else if (!strcmp(argv[1], "blocks"))
+    {
+      auto durations_blocks = gpu_blocks(window_size, false);
+      display_times(durations_blocks, categories, "GPU BLOCKS");
+    }
+    else
+    {
+      std::cerr << "Invalid argument: Expected(cpu, canonical, blocks)" <<std::endl;
+    }
+  }
+  else
+  {
+    auto durations_canonical = gpu_canonical(window_size);
+    auto durations_blocks = gpu_blocks(window_size, false);
+    auto duration_cpu = cpu_implementation(window_size);
+    display_times(duration_cpu, categories, "CPU");
+    display_times(durations_blocks, categories, "GPU BLOCKS");
+    display_times(durations_canonical, categories, "GPU CANONICAL");
+  }
 
   return 0;
 }
