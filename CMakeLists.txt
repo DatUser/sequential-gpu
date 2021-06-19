@@ -3,7 +3,8 @@ set(OPT_FLAGS, "-Ofast")
 set(
     SRC_CPU
     src/tests.cu
-    src/timer.cu
+    src/utils/timer.cu
+    src/utils/utils.cu
     src/image/image.cu
     src/block/blocks.cu
     src/block/block.cu
@@ -19,6 +20,7 @@ include_directories(
     src/block
     src/gpu
     src/kmeans
+    src/utils
 )
 
 cmake_minimum_required(VERSION 3.12)

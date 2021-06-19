@@ -11,6 +11,9 @@
 #include "tests.hh"
 #include "timer.hh"
 
+#include "kmeans-gpu.hh"
+#include "utils.hh"
+
 int main() {
     // Load imgs 
     ImageGPU img_gpu("data/test.jpg");
@@ -82,7 +85,6 @@ int main() {
     auto start_histo_cpu = start_timer();
     blocks.compute_histogram_blocks();
 
-
     // Step 4: Concatenate histograms
     std::vector<int> hist = blocks.get_concatenated_histograms();
 
@@ -98,10 +100,18 @@ int main() {
 
     std::vector<Block*> blocks_data = blocks.get_blocks();
     Block* data = blocks_data[0];
-    //std::cout << *data << '\n';
-
 
     // Launch KMeans
+    int nb_clusters = 12;
+    int nb_features = blocks_gpu.block_size * blocks_gpu.block_size;
+    int nb_samples = blocks_gpu.nb_blocks;
+    int nb_iter = 5;
 
+
+    auto kmeans = KMeansGPU(nb_clusters, nb_samples, nb_features, nb_iter, "");
+    float* histo_data = to_float_ptr(blocks_gpu.histogram, nb_samples * nb_features);
+    kmeans.fit(histo_data);
+    cudaFree(histo_data);
+    cudaCheckError();
     return 0;
 }
