@@ -3,6 +3,8 @@
 #include <cmath>
 #include <time.h>
 #include <cstdlib>
+#include <fstream>
+#include <iostream>
 
 __device__ void dist(float* dist, int* data,
                      float* clusters, int p1,
@@ -15,8 +17,6 @@ __global__ void find_closest_cluster_gpu(float* data,
                                          int nb_samples,
                                          int nb_features);
  
-
-#include <iostream>
 
 KMeansGPU::KMeansGPU(int nb_clusters,
                      int nb_samples,
@@ -47,20 +47,25 @@ KMeansGPU::~KMeansGPU() {
 }
 
 // Init one cluster using the forgy initialization
-void KMeansGPU::forgy_cluster_init(float* data, int cluster_ID) {
+void KMeansGPU::forgy_cluster_init(float* data, int cluster_ID, std::unordered_map<int, bool>& map) {
     // get random id
     int sample_id = rand() % nb_samples;
+    while (map.find(sample_id) != map.end()) {
+        //std::cout << sample_id << '\n';
+        sample_id = rand() % nb_samples;
+    }
+    map[sample_id] = true;
 
     for (int i = 0; i < nb_features; ++i) {
-
         this->clusters[cluster_ID * nb_features + i] = data[sample_id * nb_features + i];
     }
 }
 
 // Init all the clusters using forgy initialization
 void KMeansGPU::forgy_clusters_init(float* data) {
+    std::unordered_map<int, bool> map;
     for (int i = 0; i < this->nb_clusters; ++i) {
-        forgy_cluster_init(data, i);
+        forgy_cluster_init(data, i, map);
     }
 }
 
@@ -73,12 +78,16 @@ void KMeansGPU::fit(float* data) {
 
     // forgy init
     forgy_clusters_init(data);
+    //display_clusters();
+    //return;
 
     int nb_blocks = 100;
     dim3 blocks_(nb_blocks);
     dim3 threads_((nb_samples + nb_blocks) / nb_blocks);
 
     for (int i = 0; i < this->nb_iter; ++i) {
+        std::cout << "It nb. " << i << '\n';
+        //display_clusters();
         // assotiate each sample to it's closest cluster
         find_closest_cluster_gpu<<<blocks_, threads_>>>(data, data_clusters,
                                             clusters, nb_clusters,
@@ -89,7 +98,34 @@ void KMeansGPU::fit(float* data) {
 
         // compute cluster mean and set new clusters
         compute_clusters_mean(data);
+        //display_clusters();
+        return;
     }
+}
+
+void KMeansGPU::display_clusters() {
+    std::cout << "\nClusters:\n";
+    // display centroid init
+    for (int i = 0; i < nb_clusters; ++i) {
+        for (int j = 0; j < nb_features; ++j) {
+            std::cout << (float) clusters[i * nb_features + j] << ' ';
+        }
+        std::cout << '\n';
+    }
+    std::cout << "\n\n";
+}
+
+void KMeansGPU::to_csv(const char* filepath, const char* sep, int nb_cols) {
+    std::ofstream csv_ofstream(filepath);
+
+    for (int i = 0; i < nb_samples / nb_cols; ++i) {
+        for (int j = 0; j < nb_cols - 1; ++j) {
+            csv_ofstream << (float) data_clusters[i * nb_cols + j] << sep;
+        }
+        csv_ofstream << (float) data_clusters[i * nb_cols + nb_cols - 1] << '\n';
+    }
+
+    csv_ofstream.close();
 }
 
 // When it is necessary to update clusters
@@ -112,12 +148,17 @@ void KMeansGPU::compute_clusters_mean(float* data) {
         }
     }
 
+
     // division of the mean
     for (int k = 0; k < nb_clusters; ++k) {
+        if (samples_histo[k] == 0)
+            continue;
         for (int l = 0; l < nb_features; ++l) {
             clusters[k * nb_features + l] /= samples_histo[k];
         }
     }
+
+    display_clusters();
 
     free(samples_histo);
 }
@@ -129,15 +170,19 @@ void KMeansGPU::compute_clusters_mean(float* data) {
 // p1: position (row-wise) in 'data'
 // p2: position (row-wise) in 'clusters'
 // nb_features: number of features of the data (number of dimensions)
-__device__ void dist(float* dist, float* data,
+__device__ float dist(float* data,
                      float* clusters, int p1,
                      int p2, int nb_features) {
+    float dist = 0.0;
     for (int i = 0; i < nb_features; ++i) {
         int pos_data = p1 * nb_features + i;
         int pos_cluster = p2 * nb_features + i;
-        (*dist) += pow((data[pos_data] - clusters[pos_cluster]), 2);
+        //printf("%d -- %d\n", pos_data, pos_cluster);
+        //printf("%d -- %d\n", data[pos_data], clusters[pos_cluster]);
+        dist += pow((data[pos_data] - clusters[pos_cluster]), 2);
     }
-    (*dist) = sqrt(*dist);
+    //printf("%d\n", sqrt(dist));
+    return sqrt(dist);
 }
 
 // For one sample find the clusest cluster on GPU
@@ -152,13 +197,14 @@ __global__ void find_closest_cluster_gpu(float* data,
     if (idx >= nb_samples)
         return;
 
-    int curr_min_dist = 0;
+    int curr_min_dist = dist(data, clusters, idx, 0, nb_features);
     int curr_min_cluster = 0;
-    for (int i = 0; i < nb_clusters; ++i) {
+    for (int i = 1; i < nb_clusters; ++i) {
         float cluster_dist;
-        dist(&cluster_dist, data, clusters, idx, i, nb_features);
+        cluster_dist = dist(data, clusters, idx, i, nb_features);
+        //printf("%d -- %d\n", i, cluster_dist);
 
-        if (i == 0 || cluster_dist < curr_min_dist) {
+        if (cluster_dist < curr_min_dist) {
             curr_min_cluster = i;
             curr_min_dist = cluster_dist;
         }

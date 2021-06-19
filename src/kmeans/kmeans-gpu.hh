@@ -9,6 +9,7 @@
 }
 
 #include <string>
+#include <unordered_map>
 
 class KMeansGPU {
     public:
@@ -18,8 +19,10 @@ class KMeansGPU {
                   int nb_iter,
                   std::string type);
         ~KMeansGPU();
+        void to_csv(const char* path, const char* sep, int nb_cols);
 
         void fit(float* data);
+        void display_clusters();
 
         int nb_features;
         int nb_clusters;
@@ -36,7 +39,7 @@ class KMeansGPU {
         int* data_clusters;
 
     private:
-        void forgy_cluster_init(float* data, int cluster_ID);
+        void forgy_cluster_init(float* data, int cluster_ID, std::unordered_map<int, bool>& map);
         void forgy_clusters_init(float* data);
         void compute_clusters_mean(float* data);
 };
