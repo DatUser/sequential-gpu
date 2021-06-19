@@ -105,14 +105,14 @@ int main() {
     int nb_clusters = 16;
     int nb_features = blocks_gpu.block_size * blocks_gpu.block_size;
     int nb_samples = blocks_gpu.nb_blocks;
-    int nb_iter = 6;
+    int nb_iter = 7;
 
     auto kmeans = KMeansGPU(nb_clusters, nb_samples, nb_features, nb_iter, "");
     float* histo_data = to_float_ptr(blocks_gpu.histogram, nb_samples * nb_features);
     kmeans.fit(histo_data);
     cudaFree(histo_data);
     cudaCheckError();
-    int nb_cols = img_gpu.get_width() / blocks_gpu.block_size;
+    int nb_cols = img_gpu.get_padded_width() / blocks_gpu.block_size;
     kmeans.to_csv("km_res.csv", ",", nb_cols);
     return 0;
 }

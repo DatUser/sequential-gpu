@@ -32,6 +32,8 @@ KMeansGPU::KMeansGPU(int nb_clusters,
     // allocation of data
     cudaMallocManaged(&clusters, sizeof(float) * nb_clusters * nb_features);
     cudaCheckError();
+    cudaMemset(clusters, 0, sizeof(float) * nb_clusters * nb_features);
+    cudaCheckError();
 
     cudaMallocManaged(&data_clusters, sizeof(int) * nb_samples);
     cudaCheckError();
@@ -81,7 +83,7 @@ void KMeansGPU::fit(float* data) {
     //display_clusters();
     //return;
 
-    int nb_blocks = 100;
+    int nb_blocks = 200;
     dim3 blocks_(nb_blocks);
     dim3 threads_((nb_samples + nb_blocks) / nb_blocks);
 
@@ -92,6 +94,9 @@ void KMeansGPU::fit(float* data) {
         find_closest_cluster_gpu<<<blocks_, threads_>>>(data, data_clusters,
                                             clusters, nb_clusters,
                                             nb_samples, nb_features);
+        //for (int j = 0; j < nb_samples; ++j) {
+        //    find_closest_cluster(data, j);
+        //}
         cudaCheckError();
         cudaDeviceSynchronize();
         cudaCheckError();
@@ -99,7 +104,6 @@ void KMeansGPU::fit(float* data) {
         // compute cluster mean and set new clusters
         compute_clusters_mean(data);
         //display_clusters();
-        return;
     }
 }
 
@@ -158,10 +162,49 @@ void KMeansGPU::compute_clusters_mean(float* data) {
         }
     }
 
-    display_clusters();
+    //display_clusters();
 
     free(samples_histo);
 }
+
+float KMeansGPU::dist(float* data, int p1, int p2) {
+    float dist = 0.0;
+    for (int i = 0; i < nb_features; ++i) {
+        int pos_data = p1 * nb_features + i;
+        int pos_cluster = p2 * nb_features + i;
+        /*printf("p2 * nb_feat + i: %d\n", p2 * nb_features + i);
+        printf("i %d\n", i);
+        printf("HEY: %d -- %d\n", pos_cluster, clusters[pos_cluster]);*/
+        //printf("cluster: %d -- %d\n", p2, pos_cluster);
+        //printf("data: %d -- %d\n", p1, data[pos_data]);
+        dist += pow((data[pos_data] - clusters[pos_cluster]), 2);
+        //printf("dist: %d\n", dist);
+    }
+    //printf("%d\n", sqrt(dist));
+    return sqrt(dist);
+}
+
+void KMeansGPU::find_closest_cluster(float* data, int sample_ID) {
+    int curr_min_dist = dist(data, sample_ID, 0);
+    int curr_min_cluster = 0;
+    for (int i = 1; i < nb_clusters; ++i) {
+        float cluster_dist;
+        cluster_dist = dist(data, sample_ID, i);
+
+        if (cluster_dist < curr_min_dist) {
+            curr_min_cluster = i;
+            curr_min_dist = cluster_dist;
+        }
+    }
+
+    // set the min cluster idx
+    data_clusters[sample_ID] = curr_min_cluster;
+}
+
+
+
+
+
 
 // Compute Euclidian distance between proper vector of data and proper cluster
 // dist: result of the function
@@ -177,9 +220,13 @@ __device__ float dist(float* data,
     for (int i = 0; i < nb_features; ++i) {
         int pos_data = p1 * nb_features + i;
         int pos_cluster = p2 * nb_features + i;
-        //printf("%d -- %d\n", pos_data, pos_cluster);
-        //printf("%d -- %d\n", data[pos_data], clusters[pos_cluster]);
+        /*printf("p2 * nb_feat + i: %d\n", p2 * nb_features + i);
+        printf("i %d\n", i);
+        printf("HEY: %d -- %d\n", pos_cluster, clusters[pos_cluster]);*/
+        //printf("cluster: %d -- %d\n", p2, pos_cluster);
+        //printf("data: %d -- %d\n", p1, data[pos_data]);
         dist += pow((data[pos_data] - clusters[pos_cluster]), 2);
+        //printf("dist: %d\n", dist);
     }
     //printf("%d\n", sqrt(dist));
     return sqrt(dist);
@@ -194,6 +241,9 @@ __global__ void find_closest_cluster_gpu(float* data,
                                          int nb_features) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
+//    if (idx != 0)
+//        return;
+
     if (idx >= nb_samples)
         return;
 
@@ -202,7 +252,7 @@ __global__ void find_closest_cluster_gpu(float* data,
     for (int i = 1; i < nb_clusters; ++i) {
         float cluster_dist;
         cluster_dist = dist(data, clusters, idx, i, nb_features);
-        //printf("%d -- %d\n", i, cluster_dist);
+//        printf("%d -- %d\n", i, cluster_dist);
 
         if (cluster_dist < curr_min_dist) {
             curr_min_cluster = i;

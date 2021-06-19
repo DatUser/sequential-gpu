@@ -42,4 +42,6 @@ class KMeansGPU {
         void forgy_cluster_init(float* data, int cluster_ID, std::unordered_map<int, bool>& map);
         void forgy_clusters_init(float* data);
         void compute_clusters_mean(float* data);
+        void find_closest_cluster(float* data, int sample_ID);
+        float dist(float* data, int p1, int p2);
 };
