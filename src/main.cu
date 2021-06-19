@@ -130,12 +130,18 @@ void test(int window_size, bool histogram_shared = false) {
   blocks_gpu.compute_textons();
 
   std::cout << blocks_gpu.get_concatenated_histograms_size() << " " <<  blocks_gpu_test.get_concatenated_histograms_size() << "\n";
-  std::cout << blocks_gpu.textons_device[0];
-  std::cout << "Accessed blocks  texton first element" << std::endl;
-  std::cout << blocks_gpu_test.blocks_device[0];
-  std::cout << "Accessed canonical texton first element" << std::endl;
+  std::cout << "Texton first element " << +blocks_gpu.textons_device[0] << std::endl;
+  std::cout << "Canonical texton first element " << +canonical_gpu.textons_device[0] << std::endl;
+  std::cout << "Canonical texton first element remapped " << +blocks_gpu_test.blocks_device[0] << std::endl;
 
 
+
+
+  
+  if (histogram_shared)
+    blocks_gpu.compute_histogram_blocks();
+  else
+    blocks_gpu.compute_histogram_blocks();
 
   bool are_texton_eq = are_array_equal<unsigned char *>(blocks_gpu.textons_device, blocks_gpu_test.blocks_device,
                                                        blocks_gpu.get_concatenated_histograms_size(), blocks_gpu_test.get_concatenated_histograms_size());
@@ -143,10 +149,6 @@ void test(int window_size, bool histogram_shared = false) {
   std::cout << "Canonical : Texton test: " << std::boolalpha << are_texton_eq << '\n';
 
 
-  if (histogram_shared)
-    blocks_gpu.compute_histogram_blocks();
-  else
-    blocks_gpu.compute_histogram_blocks();
   //CPU
   Image img_cpu("data/test.jpg");
   int patch_size = 16;

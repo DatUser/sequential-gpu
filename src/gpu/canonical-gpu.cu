@@ -43,11 +43,14 @@ unsigned char get_padded_gray_data_value(unsigned char* padded_gray_data, int x,
 
 __global__ void compute_texton_block_canonical_gpu(unsigned char* textons, unsigned char* padded_gray_data,
                                                    int block_size, int window_radius, int nb_blocks_x) {
+    if (!(threadIdx.x == 0 && threadIdx.y == 0 && blockIdx.x == 0 && blockIdx.y == 0))
+        return;
     unsigned char value = 0;
     int x = threadIdx.x;
     int y = threadIdx.y;
 
     unsigned char central_pixel = get_padded_gray_data_value(padded_gray_data, x, y, nb_blocks_x);
+    printf("Central pixel : %d\n", central_pixel);
 
     int idx = 0;
     for (int i = -window_radius; i <= window_radius; ++i) {
@@ -64,15 +67,19 @@ __global__ void compute_texton_block_canonical_gpu(unsigned char* textons, unsig
             }
             if (i == 0 && j == 0)
                 continue;
-            if (central_pixel >= get_padded_gray_data_value(padded_gray_data, x_i, y_j, nb_blocks_x))
+            unsigned char tmp_val = get_padded_gray_data_value(padded_gray_data, x_i, y_j, nb_blocks_x);
+            printf("gray_data_value at (%d, %d) : %d , with idx : %d, and value : %d\n",
+                    x_i, y_j, tmp_val, idx, value);
+
+            if (tmp_val >= central_pixel)
                 value |= 1 << idx;
             ++idx;
         }
     }
-//    printf("value : %d\n", value);
+    printf("value : %d\n", value);
     unsigned image_index = get_image_index(x, y, nb_blocks_x);
     if (blockIdx.x == 0 && blockIdx.y == 0) {
-      //printf("threadIdx.x : %d, threadIdx.y :  %d, blockIdx.x :  %d, blockIdx.y :  %d, image_index : %d\n", threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y, image_index);
+      printf("threadIdx.x : %d, threadIdx.y :  %d, blockIdx.x :  %d, blockIdx.y :  %d, image_index : %d\n", threadIdx.x, threadIdx.y, blockIdx.x, blockIdx.y, image_index);
     }
   textons[get_image_index(x, y, nb_blocks_x)] = value;
 }
