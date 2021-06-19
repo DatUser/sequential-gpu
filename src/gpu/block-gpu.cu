@@ -10,11 +10,8 @@ void compute_texton_block_gpu(unsigned char* textons, unsigned char* blocks_img,
 
     if (i < nb_blocks && j < block_size && k < block_size)
     {
-      //printf("i: %d\nj: %d\nk: %d\n------\n", i,j,k);
       compute_pixel_texton_gpu(i, j, k, textons, blocks_img,
                                block_size, window_size, nb_blocks);
-      //printf("%i\n", texton[texton_idx]);
-      //printf("i: %i\nj: %i\nvalue:%i\n---\n", i, j, texton[i * block_size + j]);
     }
 }
 
@@ -24,10 +21,7 @@ void compute_texton_block_gpu(unsigned char* textons, unsigned char* blocks_img,
 __device__
 void compute_pixel_texton_gpu(int i, int j, int k, unsigned char* textons,
     unsigned char* blocks_img, int block_size, int window_size, int nb_blocks) {
-    if (!(i == 0 && j == 0 && k == 0))
-        return;
     int value = 0;
-    int idx = 0;
     int pos_t = k + j * block_size + i * block_size * block_size;
     for (int l = 0; l < window_size; ++l) {
         for (int m = 0; m < window_size; ++m) {
@@ -42,9 +36,6 @@ void compute_pixel_texton_gpu(int i, int j, int k, unsigned char* textons,
                 value = value << 1;
             } else {
                 int pos_it = pos_k + pos_j * block_size + i * block_size * block_size;
-                printf("gray_data_value at (%d, %d) : %d , with idx : %d, and value : %d\n",
-                        pos_k, pos_j, blocks_img[pos_t], idx, value);
-                idx++;
                 if (blocks_img[pos_it] >= blocks_img[pos_t])
                     value = value << 1 | 1;
                 else
@@ -52,7 +43,6 @@ void compute_pixel_texton_gpu(int i, int j, int k, unsigned char* textons,
             }
         }
     }
-    printf("value : %d\n", value);
     textons[pos_t] = value;
 }
 
