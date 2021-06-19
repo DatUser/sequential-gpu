@@ -12,72 +12,53 @@
 #include "tests.hh"
 #include "timer.hh"
 
-std::vector<std::chrono::duration<double>> gpu_canonical(int window_size) {
+std::vector<float> gpu_canonical(int window_size) {
 
-  std::vector<std::chrono::duration<double>> durations;
+  std::vector<float> durations;
   ImageGPU img_gpu("data/test.jpg");
 
-  auto start_gray_gpu = start_timer();
-  img_gpu.to_gray();
-  durations.emplace_back(duration(start_gray_gpu));
+  compute_duration(std::bind(&ImageGPU::to_gray, &img_gpu), durations);
 
-  auto start_padd_gpu = start_timer();
-  img_gpu.padd_image();
-  durations.emplace_back(duration(start_padd_gpu));
+  compute_duration(std::bind(&ImageGPU::padd_image, &img_gpu), durations);
 
-  auto start_to_blocks_canonical_gpu = start_timer();
+  auto start_to_blocks_canonical_gpu = start_timer_gpu();
   CanonicalGPU canonical_gpu(img_gpu, window_size);
-  durations.emplace_back(duration(start_to_blocks_canonical_gpu));
+  durations.emplace_back(duration_gpu(start_to_blocks_canonical_gpu));
 
-  auto start_texton_gpu = start_timer();
-  canonical_gpu.compute_textons();
-  durations.emplace_back(duration(start_texton_gpu));
+  compute_duration(std::bind(&CanonicalGPU::compute_textons, &canonical_gpu), durations);
 
-  auto start_histo_gpu = start_timer();
-  //blocks_gpu.compute_histogram_blocks();
-  canonical_gpu.compute_shared_histogram_blocks();
-  durations.emplace_back(duration(start_histo_gpu));
+  compute_duration(std::bind(&CanonicalGPU::compute_shared_histogram_blocks, &canonical_gpu), durations);
 
   return durations;
 }
 
-std::vector<std::chrono::duration<double>> gpu_blocks(int window_size, bool histogram_shared = false) {
+std::vector<float> gpu_blocks(int window_size, bool histogram_shared = false) {
 
-  std::vector<std::chrono::duration<double>> durations;
+  std::vector<float> durations;
   ImageGPU img_gpu("data/test.jpg");
 
-  auto start_gray_gpu = start_timer();
-  img_gpu.to_gray();
-  durations.emplace_back(duration(start_gray_gpu));
+  compute_duration(std::bind(&ImageGPU::to_gray, &img_gpu), durations);
 
-  auto start_padd_gpu = start_timer();
-  img_gpu.padd_image();
-  durations.emplace_back(duration(start_padd_gpu));
+  compute_duration(std::bind(&ImageGPU::padd_image, &img_gpu), durations);
 
-  auto start_to_blocks_canonical_gpu = start_timer();
+  auto start_to_blocks_gpu = start_timer_gpu();
   BlocksGPU blocks_gpu = img_gpu.to_blocks(window_size);
-  durations.emplace_back(duration(start_to_blocks_canonical_gpu));
+  durations.emplace_back(duration_gpu(start_to_blocks_gpu));
 
-  auto start_texton_gpu = start_timer();
-  blocks_gpu.compute_textons();
-  durations.emplace_back(duration(start_texton_gpu));
+  compute_duration(std::bind(&BlocksGPU::compute_textons, &blocks_gpu), durations);
 
   if (histogram_shared) {
-    auto start_histo_gpu = start_timer();
-    blocks_gpu.compute_histogram_blocks();
-    durations.emplace_back(duration(start_histo_gpu));
+    compute_duration(std::bind(&BlocksGPU::compute_shared_histogram_blocks, &blocks_gpu), durations);
   }
   else {
-    auto start_histo_gpu = start_timer();
-    blocks_gpu.compute_histogram_blocks();
-    durations.emplace_back(duration(start_histo_gpu));
+    compute_duration(std::bind(&BlocksGPU::compute_histogram_blocks, &blocks_gpu), durations);
   }
 
   return durations;
 }
 
-std::vector<std::chrono::duration<double>> cpu_implementation(int window_size, bool histogram_shared = false) {
-  std::vector<std::chrono::duration<double>> durations;
+std::vector<float> cpu_implementation(int window_size, bool histogram_shared = false) {
+  std::vector<float> durations;
   Image img_cpu("data/test.jpg");
   int patch_size = 16;
   img_cpu.set_patch_size(patch_size);
