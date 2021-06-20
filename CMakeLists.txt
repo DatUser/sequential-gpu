@@ -11,6 +11,7 @@ set(
     src/gpu/blocks-gpu.cu
     src/gpu/image-gpu.cu
     src/gpu/canonical-gpu.cu
+    src/gpu/kmeans-gpu.cu
 )
 
 include_directories(

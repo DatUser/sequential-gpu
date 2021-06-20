@@ -24,6 +24,7 @@ public:
     /* getters */
     unsigned char* get_gray_data() const { return gray_data; }
     unsigned char* get_padded_gray_data() const { return padded_gray_data; }
+    int get_padded_width() const { return padded_width; }
     void set_padded_gray_data(unsigned char* padded_gray_data) {
         cudaMemcpy(this->padded_gray_data, padded_gray_data, sizeof(unsigned char) * get_padded_size(), cudaMemcpyDefault);
         //this->padded_gray_data = padded_gray_data;

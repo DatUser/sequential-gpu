@@ -11,6 +11,34 @@
 #include "image-gpu.hh"
 #include "tests.hh"
 #include "timer.hh"
+#include "kmeans-gpu.hh"
+
+__global__ void to_float_ptr_gpu(float* result, int* vec, int size);
+
+float* to_float_ptr(int* vec, int size) {
+    float* result;
+    cudaMallocManaged(&result, sizeof(float) * size);
+    cudaCheckError();
+
+    int nb_blocks = 500;
+    dim3 threads_((size + nb_blocks) / nb_blocks);
+    dim3 blocks_(nb_blocks);
+    to_float_ptr_gpu<<<blocks_, threads_>>>(result, vec, size);
+    cudaCheckError();
+    cudaDeviceSynchronize();
+    cudaCheckError();
+
+    return result;
+}
+
+__global__ void to_float_ptr_gpu(float* result, int* vec, int size) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (idx >= size)
+        return;
+
+    result[idx] = (float) vec[idx];
+}
 
 std::vector<float> gpu_canonical(int window_size) {
 
@@ -89,6 +117,30 @@ std::vector<float> cpu_implementation(int window_size, bool histogram_shared = f
   return durations;
 }
 
+void kmeanGPU_implementation(int window_size) {
+  ImageGPU img_gpu("data/test.jpg");
+  img_gpu.to_gray();
+  img_gpu.padd_image();
+  BlocksGPU blocks_gpu = img_gpu.to_blocks(window_size);
+  blocks_gpu.compute_textons();
+  blocks_gpu.compute_shared_histogram_blocks();
+  int nb_clusters = 16;
+  int nb_features = blocks_gpu.block_size * blocks_gpu.block_size;
+  int nb_samples = blocks_gpu.nb_blocks;
+  int nb_iter = 15;
+
+  auto start_kmeans_gpu = start_timer();
+  auto kmeans = KMeansGPU(nb_clusters, nb_samples, nb_features, nb_iter, "");
+  float* histo_data = to_float_ptr(blocks_gpu.histogram, nb_samples * nb_features);
+  kmeans.fit(histo_data);
+  cudaFree(histo_data);
+  cudaCheckError();
+  auto duration_kmean_gpu = duration(start_kmeans_gpu);
+  std::cout << "KMeans: " << duration_kmean_gpu << "ms\n";
+  int nb_cols = img_gpu.get_padded_width() / blocks_gpu.block_size;
+  kmeans.to_csv("kmeans_res.csv", ",", nb_cols);
+}
+
 void test(int window_size, bool histogram_shared = false) {
   // CANONICAL
   ImageGPU img_gpu_canonical("data/test.jpg");
@@ -114,10 +166,6 @@ void test(int window_size, bool histogram_shared = false) {
   std::cout << "Texton first element " << +blocks_gpu.textons_device[0] << std::endl;
   std::cout << "Canonical texton first element " << +canonical_gpu.textons_device[0] << std::endl;
   std::cout << "Canonical texton first element remapped " << +blocks_gpu_test.blocks_device[0] << std::endl;
-
-
-
-
   
   if (histogram_shared)
     blocks_gpu.compute_histogram_blocks();
@@ -176,7 +224,7 @@ int main(int argc, char **argv) {
   std::vector<std::string> categories = {"Gray", "Pad", "To Blocks", "Texton", "Histo"};
   int window_size = 3;
   test(window_size);
-  
+
   if (argc == 2)
   {
     //switch (argv[1])
@@ -197,7 +245,7 @@ int main(int argc, char **argv) {
     }
     else
     {
-      std::cerr << "Invalid argument: Expected(cpu, canonical, blocks)" <<std::endl;
+      std::cerr << "Invalid argument: Expected(cpu, canonical, blocks)" << std::endl;
     }
   }
   else
@@ -209,6 +257,9 @@ int main(int argc, char **argv) {
     display_times(durations_blocks, categories, "GPU BLOCKS");
     display_times(durations_canonical, categories, "GPU CANONICAL");
   }
+
+  // KMeans
+  kmeanGPU_implementation(window_size);
 
   return 0;
 }
