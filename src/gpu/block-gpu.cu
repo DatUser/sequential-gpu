@@ -76,5 +76,6 @@ void compute_shared_histogram_block_gpu(int* histogram, unsigned char* texton,
     atomicAdd(&(local_histogram[cellValue]), 1);
     __syncthreads();
 
-    atomicAdd(&(histogram[i + blockIdx.x * size_histogram]), local_histogram[i]);
+    //atomicAdd(&(histogram[i + blockIdx.x * size_histogram]), local_histogram[i]);
+    histogram[i + blockIdx.x * size_histogram] += local_histogram[i];
 }

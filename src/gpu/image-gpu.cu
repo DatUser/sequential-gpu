@@ -26,8 +26,6 @@ ImageGPU::ImageGPU(const char* path) {
     // compute padded width / height
     padded_width = width + patch_size - width % patch_size;
     padded_height =  height + patch_size - height % patch_size;
-    std::cout << "width : " << padded_width << " height : " << padded_height
-      << " total : " << padded_width * padded_height << " size : " << size << '\n';
 
     // make allocations
     cudaMallocManaged(&data, sizeof(unsigned char) * size);
@@ -105,43 +103,17 @@ BlocksGPU ImageGPU::to_blocks(int window_size) const {
     // allocation of blocks_device
     unsigned char* blocks_device;
     int size = nb_blocks * patch_size * patch_size;
-    cudaMallocManaged(&blocks_device, sizeof(unsigned char) * size);//TODO added managed to do debugging
+    cudaMallocManaged(&blocks_device, sizeof(unsigned char) * size);
     cudaCheckError();
 
     int p_size = patch_size * patch_size;
     int nb_tiles_x = padded_width / patch_size;
 
-    /*for (int i = 0; i < padded_height; ++i) {
-        for (int j = 0; j < padded_width; ++j) {
-            int pos = i * padded_width + j;
-            int nb_blocks_col = padded_width / patch_size;
-
-            int i_patch = i / patch_size; // row
-            int j_patch = j / patch_size; // col
-
-            int pos_b = i_patch * nb_blocks_col * p_size + j_patch * p_size + (i % patch_size) * patch_size + (j % patch_size);
-            blocks_device[pos_b] = padded_gray_data[pos];
-        }
-    }
-
-    int p_size = patch_size * patch_size;//size of full patch
-    int nb_tiles_x = padded_width / patch_size;
-
-    for (int i = 0; i < padded_width * padded_height; ++i)
-    {
-      int new_index = (i % patch_size)
-	+ p_size * ((i / patch_size) % nb_tiles_x)
-	+ patch_size * ((i / (nb_tiles_x * patch_size)) % patch_size)
-	+ p_size * nb_tiles_x * (i / (p_size * nb_tiles_x));
-
-      blocks_device[new_index] = padded_gray_data[i];
-    }*/
-
     dim3 threads_(patch_size, patch_size);
     dim3 blocks_(padded_width / patch_size, padded_height / patch_size);
     compute_blocks_device<<<blocks_, threads_>>>(window_size, blocks_device,
-	padded_gray_data, p_size, nb_tiles_x, padded_width, padded_height,
-	patch_size);
+            padded_gray_data, p_size, nb_tiles_x, padded_width, padded_height,
+            patch_size);
 
     return BlocksGPU(blocks_device, nb_blocks, patch_size, window_size);
 }

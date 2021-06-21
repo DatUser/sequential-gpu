@@ -179,13 +179,8 @@ void test(int window_size, bool histogram_shared = false) {
   BlocksGPU blocks_gpu = img_gpu.to_blocks(window_size);
   blocks_gpu.compute_textons();
 
-  std::cout << blocks_gpu.get_concatenated_histograms_size() << " " <<  blocks_gpu_test.get_concatenated_histograms_size() << "\n";
-  std::cout << "Texton first element " << +blocks_gpu.textons_device[0] << std::endl;
-  std::cout << "Canonical texton first element " << +canonical_gpu.textons_device[0] << std::endl;
-  std::cout << "Canonical texton first element remapped " << +blocks_gpu_test.blocks_device[0] << std::endl;
-  
   if (histogram_shared)
-    blocks_gpu.compute_histogram_blocks();
+    blocks_gpu.compute_shared_histogram_blocks();
   else
     blocks_gpu.compute_histogram_blocks();
 
@@ -218,7 +213,7 @@ void test(int window_size, bool histogram_shared = false) {
   bool are_histo_eq_canonical = are_array_equal<int *>(blocks.get_concatenated_histograms().data(), canonical_gpu.histogram,
                                              blocks.get_concatenated_histograms_size(), canonical_gpu.get_concatenated_histograms_size());
   std::cout << "--------------\n";
- std::cout << "Canonical : Concatenate test: " << std::boolalpha << are_histo_eq_canonical << '\n';
+  std::cout << "Canonical : Concatenate test: " << std::boolalpha << are_histo_eq_canonical << '\n';
 
   bool are_histo_eq = are_array_equal<int *>(blocks.get_concatenated_histograms().data(), blocks_gpu.histogram,
                                              blocks.get_concatenated_histograms_size(), blocks_gpu.get_concatenated_histograms_size());
@@ -226,16 +221,8 @@ void test(int window_size, bool histogram_shared = false) {
   std::cout << "Block : Concatenate test: " << std::boolalpha << are_histo_eq << '\n';
 
   std::vector<Block*> blocks_data = blocks.get_blocks();
-  //Block* data = blocks_data[0];
-  //std::cout << *data << '\n';
 
 }
-
-/*bool are_eq1 = are_array_equal<unsigned char *>(other_img.get_data(), img_gpu.get_gray_data(), other_img.get_size(), img_gpu.get_size());
-bool are_eq2 = are_array_equal<unsigned char *>(padded_img2.get_data(), img_gpu.get_padded_gray_data(), padded_img2.get_size(), img_gpu.get_padded_size());
-std::cout << "--------------\n";
-std::cout << "Gray Img test: " << std::boolalpha << are_eq1 << '\n';
-std::cout << "Padded Gray Img test: " << std::boolalpha << are_eq2 << '\n';*/
 
 int main(int argc, char **argv) {
   std::vector<std::string> categories = {"Gray", "Pad", "To Blocks", "Texton", "Histo", "Total"};
@@ -266,7 +253,7 @@ int main(int argc, char **argv) {
   }
   else
   {
-    test(window_size);
+    test(window_size, true);
     auto durations_canonical = gpu_canonical(window_size, true);
     auto durations_blocks = gpu_blocks(window_size, true);
     auto duration_cpu = cpu_implementation(window_size);

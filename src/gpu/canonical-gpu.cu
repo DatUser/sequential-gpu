@@ -85,7 +85,6 @@ void CanonicalGPU::compute_textons() {
     cudaCheckError();
 
     cudaDeviceSynchronize();
-    std::cout << *textons_device;
     cudaCheckError();
 }
 
@@ -117,7 +116,8 @@ void compute_shared_histogram_block_gpu_canonical(int* histogram, unsigned char*
 
   unsigned int index_histogram = blockIdx.x + blockIdx.y * nb_blocks_x;
   unsigned int offset_histogram = index_histogram * size_histogram;
-  atomicAdd(&(histogram[index_1D + offset_histogram]), local_histogram[index_1D]);
+  histogram[index_1D + offset_histogram] += local_histogram[index_1D];
+  //atomicAdd(&(histogram[index_1D + offset_histogram]), local_histogram[index_1D]);
 }
 
 __global__
