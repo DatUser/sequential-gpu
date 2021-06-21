@@ -20,7 +20,7 @@ float* to_float_ptr(int* vec, int size) {
     cudaMallocManaged(&result, sizeof(float) * size);
     cudaCheckError();
 
-    int nb_blocks = 500;
+    int nb_blocks = 2000;
     dim3 threads_((size + nb_blocks) / nb_blocks);
     dim3 blocks_(nb_blocks);
     to_float_ptr_gpu<<<blocks_, threads_>>>(result, vec, size);

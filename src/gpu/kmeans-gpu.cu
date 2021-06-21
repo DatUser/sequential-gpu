@@ -16,7 +16,13 @@ __global__ void find_closest_cluster_gpu(float* data,
                                          int nb_clusters,
                                          int nb_samples,
                                          int nb_features);
- 
+
+__global__ void set_val(float* data, float val, int size);
+
+__global__ void init_clusters_gpu(float* clusters, float* data,
+                                    int nb_clusters, int nb_features,
+                                    int sample_ID, int cluster_ID);
+
 KMeansGPU::KMeansGPU(int nb_clusters,
                      int nb_samples,
                      int nb_features,
@@ -57,9 +63,27 @@ void KMeansGPU::forgy_cluster_init(float* data, int cluster_ID, std::unordered_m
     }
     map[sample_id] = true;
 
-    for (int i = 0; i < nb_features; ++i) {
-        this->clusters[cluster_ID * nb_features + i] = data[sample_id * nb_features + i];
-    }
+    //for (int i = 0; i < nb_features; ++i) {
+    //    this->clusters[cluster_ID * nb_features + i] = data[sample_id * nb_features + i];
+    //}
+    int nb_blocks = 30;
+    dim3 blocks_(nb_blocks);
+    dim3 threads_((nb_features + nb_features) / nb_blocks);
+    init_clusters_gpu<<<blocks_, threads_>>>(clusters, data, nb_clusters, nb_features, sample_id, cluster_ID);
+    cudaCheckError();
+    cudaDeviceSynchronize();
+    cudaCheckError();
+}
+
+__global__ void init_clusters_gpu(float* clusters, float* data,
+                                    int nb_clusters, int nb_features,
+                                    int sample_ID, int cluster_ID) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (idx >= nb_clusters * nb_features)
+        return;
+
+    clusters[cluster_ID * nb_features + idx] = data[sample_ID * nb_features + idx];
 }
 
 // Init all the clusters using forgy initialization
@@ -132,9 +156,17 @@ void KMeansGPU::compute_clusters_mean(float* data) {
     samples_histo = (int*) calloc(nb_clusters, sizeof(int));
 
     // set cluster to 0
-    for (int i = 0; i < nb_clusters * nb_features; ++i) {
-        clusters[i] = 0.0;
-    }
+    //for (int i = 0; i < nb_clusters * nb_features; ++i) {
+    //    clusters[i] = 0.0;
+    //}
+    int s = nb_clusters * nb_features;
+    int nb_blocks = 200;
+    dim3 blocks_(nb_blocks);
+    dim3 threads_((s + nb_blocks) / nb_blocks);
+    set_val<<<blocks_, threads_>>>(clusters, 0.0, nb_clusters * nb_features);
+    cudaCheckError();
+    cudaDeviceSynchronize();
+    cudaCheckError();
 
     // compute the mean of each cluster
     for (int i = 0; i < nb_samples; ++i) {
@@ -155,6 +187,14 @@ void KMeansGPU::compute_clusters_mean(float* data) {
     }
 
     free(samples_histo);
+}
+
+__global__ void set_val(float* data, float val, int size) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx >= size)
+        return;
+
+    data[idx] = val;
 }
 
 float KMeansGPU::dist(float* data, int p1, int p2) {

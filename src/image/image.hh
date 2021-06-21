@@ -12,9 +12,11 @@ class Image {
         ~Image();
 
         /* Methods */
+
         Image to_gray() const;
         Image add_padding_row() const;
         Image add_padding_col() const;
+
 
         Blocks to_blocks(int window_size) const;
 
