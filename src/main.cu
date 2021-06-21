@@ -163,7 +163,10 @@ void test(int window_size, bool histogram_shared = false) {
   CanonicalGPU canonical_gpu(img_gpu_canonical, window_size);
   canonical_gpu.compute_textons();
 
-  canonical_gpu.compute_shared_histogram_blocks();
+  if (histogram_shared)
+    canonical_gpu.compute_shared_histogram_blocks();
+  else
+    canonical_gpu.compute_histogram_blocks();
 
   ImageGPU img_test("data/test.jpg");
   img_test.set_padded_gray_data(canonical_gpu.textons_device);
@@ -248,12 +251,12 @@ int main(int argc, char **argv) {
     }
     else if (!strcmp(argv[1], "canonical"))
     {
-      auto durations_canonical = gpu_canonical(window_size);
+      auto durations_canonical = gpu_canonical(window_size, true);
       display_times(durations_canonical, categories, "GPU CANONICAL");
     }
     else if (!strcmp(argv[1], "blocks"))
     {
-      auto durations_blocks = gpu_blocks(window_size, false);
+      auto durations_blocks = gpu_blocks(window_size, true);
       display_times(durations_blocks, categories, "GPU BLOCKS");
     }
     else
