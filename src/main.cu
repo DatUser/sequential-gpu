@@ -40,7 +40,7 @@ __global__ void to_float_ptr_gpu(float* result, int* vec, int size) {
     result[idx] = (float) vec[idx];
 }
 
-std::vector<float> gpu_canonical(int window_size) {
+std::vector<float> gpu_canonical(int window_size, bool histogram_shared = false) {
 
   std::vector<float> durations;
   ImageGPU img_gpu("data/test.jpg");
@@ -55,7 +55,11 @@ std::vector<float> gpu_canonical(int window_size) {
 
   compute_duration(std::bind(&CanonicalGPU::compute_textons, &canonical_gpu), durations);
 
-  compute_duration(std::bind(&CanonicalGPU::compute_shared_histogram_blocks, &canonical_gpu), durations);
+  if (histogram_shared) {
+    compute_duration(std::bind(&CanonicalGPU::compute_shared_histogram_blocks, &canonical_gpu), durations);
+  } else {
+    compute_duration(std::bind(&CanonicalGPU::compute_histogram_blocks, &canonical_gpu), durations);
+  }
 
   return durations;
 }
@@ -250,8 +254,8 @@ int main(int argc, char **argv) {
   }
   else
   {
-    auto durations_canonical = gpu_canonical(window_size);
-    auto durations_blocks = gpu_blocks(window_size, false);
+    auto durations_canonical = gpu_canonical(window_size, true);
+    auto durations_blocks = gpu_blocks(window_size, true);
     auto duration_cpu = cpu_implementation(window_size);
     display_times(duration_cpu, categories, "CPU");
     display_times(durations_blocks, categories, "GPU BLOCKS");

@@ -17,6 +17,7 @@ public:
     // compute all the textons (each texton is computed on GPU)
     void compute_textons();
     void compute_shared_histogram_blocks();
+    void compute_histogram_blocks();
     int get_concatenated_histograms_size() const {
         return nb_blocks * block_size * block_size;
     }

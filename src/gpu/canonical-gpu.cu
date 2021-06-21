@@ -120,12 +120,42 @@ void compute_shared_histogram_block_gpu_canonical(int* histogram, unsigned char*
   atomicAdd(&(histogram[index_1D + offset_histogram]), local_histogram[index_1D]);
 }
 
+__global__
+void compute_histogram_block_gpu_canonical(int* histogram, unsigned char* texton,
+                                        int size_histogram, int nb_blocks_x) {
+
+  unsigned int i = threadIdx.x;
+  unsigned int j = threadIdx.y;
+  unsigned int offset_local_histogram = i + j * nb_blocks_x * blockDim.x;
+
+  unsigned int offset_x = blockDim.x * blockIdx.x;
+  unsigned int offset_y = blockDim.y * blockIdx.y;
+  unsigned int offset_total = offset_x + offset_y * nb_blocks_x * blockDim.x;
+  unsigned char cellValue = get_value_texton_canonical(texton + offset_total, offset_local_histogram);
+
+  unsigned int index_histogram = blockIdx.x + blockIdx.y * nb_blocks_x;
+  unsigned int offset_histogram = index_histogram * size_histogram;
+  atomicAdd(&(histogram[cellValue + offset_histogram]), 1);
+}
+
 void CanonicalGPU::compute_shared_histogram_blocks() {
   dim3 blocks_(nb_blocks_x, nb_blocks_y);
   dim3 threads_(block_size, block_size);
   int size = block_size * block_size;
   compute_shared_histogram_block_gpu_canonical<<<blocks_, threads_, block_size * block_size * sizeof(int)>>>(histogram, textons_device,
                                                                                             size, nb_blocks_x);
+
+    cudaCheckError();
+    cudaDeviceSynchronize();
+    cudaCheckError();
+}
+
+void CanonicalGPU::compute_histogram_blocks() {
+  dim3 blocks_(nb_blocks_x, nb_blocks_y);
+  dim3 threads_(block_size, block_size);
+  int size = block_size * block_size;
+  compute_histogram_block_gpu_canonical<<<blocks_, threads_>>>(histogram, textons_device,
+                                                                      size, nb_blocks_x);
 
     cudaCheckError();
     cudaDeviceSynchronize();
