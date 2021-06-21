@@ -43,6 +43,7 @@ __global__ void to_float_ptr_gpu(float* result, int* vec, int size) {
 std::vector<float> gpu_canonical(int window_size, bool histogram_shared = false) {
 
   std::vector<float> durations;
+  auto start_total = start_timer();
   ImageGPU img_gpu("data/test.jpg");
 
   compute_duration(std::bind(&ImageGPU::to_gray, &img_gpu), durations);
@@ -61,12 +62,15 @@ std::vector<float> gpu_canonical(int window_size, bool histogram_shared = false)
     compute_duration(std::bind(&CanonicalGPU::compute_histogram_blocks, &canonical_gpu), durations);
   }
 
+  durations.emplace_back(duration(start_total));
+
   return durations;
 }
 
 std::vector<float> gpu_blocks(int window_size, bool histogram_shared = false) {
 
   std::vector<float> durations;
+  auto start_total = start_timer_gpu();
   ImageGPU img_gpu("data/test.jpg");
 
   compute_duration(std::bind(&ImageGPU::to_gray, &img_gpu), durations);
@@ -86,11 +90,16 @@ std::vector<float> gpu_blocks(int window_size, bool histogram_shared = false) {
     compute_duration(std::bind(&BlocksGPU::compute_histogram_blocks, &blocks_gpu), durations);
   }
 
+  durations.emplace_back(duration_gpu(start_total));
+
   return durations;
 }
 
 std::vector<float> cpu_implementation(int window_size, bool histogram_shared = false) {
   std::vector<float> durations;
+
+  auto start_total = start_timer_gpu();
+
   Image img_cpu("data/test.jpg");
   int patch_size = 16;
   img_cpu.set_patch_size(patch_size);
@@ -98,7 +107,6 @@ std::vector<float> cpu_implementation(int window_size, bool histogram_shared = f
   auto start_gray_cpu = start_timer();
   auto other_img = img_cpu.to_gray();
   durations.emplace_back(duration(start_gray_cpu));
-
 
   auto start_padd_cpu = start_timer();
   auto padded_img = other_img.add_padding_row();
@@ -117,6 +125,8 @@ std::vector<float> cpu_implementation(int window_size, bool histogram_shared = f
   blocks.compute_histogram_blocks();
   std::vector<int> hist = blocks.get_concatenated_histograms();
   durations.emplace_back(duration(start_histo_cpu));
+
+  durations.emplace_back(duration_gpu(start_total));
 
   return durations;
 }
@@ -225,7 +235,7 @@ std::cout << "Gray Img test: " << std::boolalpha << are_eq1 << '\n';
 std::cout << "Padded Gray Img test: " << std::boolalpha << are_eq2 << '\n';*/
 
 int main(int argc, char **argv) {
-  std::vector<std::string> categories = {"Gray", "Pad", "To Blocks", "Texton", "Histo"};
+  std::vector<std::string> categories = {"Gray", "Pad", "To Blocks", "Texton", "Histo", "Total"};
   int window_size = 3;
   test(window_size);
 
