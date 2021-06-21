@@ -27,12 +27,14 @@ KMeansGPU::KMeansGPU(int nb_clusters,
                      int nb_samples,
                      int nb_features,
                      int nb_iter,
-                     std::string type) {
+                     std::string type,
+                     bool verbose) {
     this->nb_clusters = nb_clusters;
     this->nb_features = nb_features;
     this->nb_samples = nb_samples;
     this->nb_iter = nb_iter;
     this->type = type;
+    this->verbose = verbose;
 
     // allocation of data
     cudaMallocManaged(&clusters, sizeof(float) * nb_clusters * nb_features);
@@ -109,7 +111,8 @@ void KMeansGPU::fit(float* data) {
     dim3 threads_((nb_samples + nb_blocks) / nb_blocks);
 
     for (int i = 0; i < this->nb_iter; ++i) {
-        std::cout << "It nb. " << i << '\n';
+        if (verbose)
+            std::cout << "It nb. " << i << '\n';
 
         // assotiate each sample to it's closest cluster
         find_closest_cluster_gpu<<<blocks_, threads_>>>(data, data_clusters,
@@ -160,7 +163,7 @@ void KMeansGPU::compute_clusters_mean(float* data) {
     //    clusters[i] = 0.0;
     //}
     int s = nb_clusters * nb_features;
-    int nb_blocks = 200;
+    int nb_blocks = 100;
     dim3 blocks_(nb_blocks);
     dim3 threads_((s + nb_blocks) / nb_blocks);
     set_val<<<blocks_, threads_>>>(clusters, 0.0, nb_clusters * nb_features);

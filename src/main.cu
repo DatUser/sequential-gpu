@@ -43,7 +43,7 @@ __global__ void to_float_ptr_gpu(float* result, int* vec, int size) {
 std::vector<float> gpu_canonical(int window_size, bool histogram_shared = false) {
 
   std::vector<float> durations;
-  auto start_total = start_timer();
+  auto start_total = start_timer_gpu();
   ImageGPU img_gpu("data/test.jpg");
 
   compute_duration(std::bind(&ImageGPU::to_gray, &img_gpu), durations);
@@ -62,7 +62,7 @@ std::vector<float> gpu_canonical(int window_size, bool histogram_shared = false)
     compute_duration(std::bind(&CanonicalGPU::compute_histogram_blocks, &canonical_gpu), durations);
   }
 
-  durations.emplace_back(duration(start_total));
+  durations.emplace_back(duration_gpu(start_total));
 
   return durations;
 }
@@ -144,7 +144,7 @@ void kmeanGPU_implementation(int window_size) {
   int nb_iter = 15;
 
   auto start_kmeans_gpu = start_timer();
-  auto kmeans = KMeansGPU(nb_clusters, nb_samples, nb_features, nb_iter, "");
+  auto kmeans = KMeansGPU(nb_clusters, nb_samples, nb_features, nb_iter, "", false);
   float* histo_data = to_float_ptr(blocks_gpu.histogram, nb_samples * nb_features);
   kmeans.fit(histo_data);
   cudaFree(histo_data);
@@ -237,7 +237,6 @@ std::cout << "Padded Gray Img test: " << std::boolalpha << are_eq2 << '\n';*/
 int main(int argc, char **argv) {
   std::vector<std::string> categories = {"Gray", "Pad", "To Blocks", "Texton", "Histo", "Total"};
   int window_size = 3;
-  test(window_size);
 
   if (argc == 2)
   {
@@ -264,16 +263,18 @@ int main(int argc, char **argv) {
   }
   else
   {
+    test(window_size);
     auto durations_canonical = gpu_canonical(window_size, true);
     auto durations_blocks = gpu_blocks(window_size, true);
     auto duration_cpu = cpu_implementation(window_size);
     display_times(duration_cpu, categories, "CPU");
     display_times(durations_blocks, categories, "GPU BLOCKS");
     display_times(durations_canonical, categories, "GPU CANONICAL");
+
+    // KMeans
+    kmeanGPU_implementation(window_size);
   }
 
-  // KMeans
-  kmeanGPU_implementation(window_size);
 
   return 0;
 }

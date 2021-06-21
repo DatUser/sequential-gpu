@@ -17,7 +17,8 @@ class KMeansGPU {
                   int nb_samples,
                   int nb_features,
                   int nb_iter,
-                  std::string type);
+                  std::string type,
+                  bool verbose);
         ~KMeansGPU();
         void to_csv(const char* path, const char* sep, int nb_cols);
 
@@ -37,6 +38,8 @@ class KMeansGPU {
         // Each samples is associated to a cluster
         // shape=(nb_samples, )
         int* data_clusters;
+
+        bool verbose;
 
     private:
         void forgy_cluster_init(float* data, int cluster_ID, std::unordered_map<int, bool>& map);
